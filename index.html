@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chemistry Energy Cycle</title>
+    <style>
+        #canvasContainer {
+            position: relative;
+            border: 1px solid #000;
+            width: 600px;
+            height: 400px;
+            margin: 0 auto;
+            user-select: none;
+        }
+        /* Boxes for A, B, C (draggable) */
+        .draggable {
+            width: 50px;
+            height: 20px;
+            background-color: lightblue;
+            text-align: center;
+            line-height: 20px;
+            position: absolute;
+            cursor: grab;
+            border: 1px solid #000;
+            user-select: none;
+        }
+        /* Arrows (NOT draggable, just clickable for direction) */
+        .arrow {
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+        #checkButton {
+            display: block;
+            margin: 10px auto;
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        #feedback {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>Chemistry Energy Cycle</h1>
+
+<div id="canvasContainer">
+    <canvas id="myCanvas" width="600" height="400"></canvas>
+
+    <!-- Draggable boxes for chemicals -->
+    <!-- Placed outside the triangle initially so the student can drag them to placeholders -->
+    <div class="draggable" id="A" style="left: 0px;   top: 420px;">A</div>
+    <div class="draggable" id="B" style="left: 60px;  top: 420px;">B</div>
+    <div class="draggable" id="C" style="left: 120px; top: 420px;">C</div>
+
+    <!-- Arrows, fixed at center of lines in an equilateral triangle. Click to flip direction. -->
+    <div class="arrow" id="arrowAB" style="left: 215px; top: 170px;">→</div>
+    <div class="arrow" id="arrowBC" style="left: 290px; top: 310px;">→</div>
+    <div class="arrow" id="arrowCA" style="left: 365px; top: 170px;">→</div>
+</div>
+
+<button id="checkButton">Check</button>
+<div id="feedback"></div>
+
+<script>
+// --------------------------------------------------------
+//  Define 3 placeholders forming an approximate equilateral triangle
+// --------------------------------------------------------
+const canvas = document.getElementById('myCanvas');
+const ctx = canvas.getContext('2d');
+
+// We place them so that:
+//  - boxA is the top vertex
+//  - boxB is bottom-left vertex
+//  - boxC is bottom-right vertex
+// Coordinates approximate an equilateral triangle side ~300.
+
+// x=270,y=20 for A, x=120,y=300 for B, x=420,y=300 for C.
+// Each box is 60 wide x 40 tall.
+
+const placeholders = [
+  { name: 'boxA', x: 270, y: 20,  w: 60, h: 40, occupant: null },
+  { name: 'boxB', x: 120, y: 300, w: 60, h: 40, occupant: null },
+  { name: 'boxC', x: 420, y: 300, w: 60, h: 40, occupant: null }
+];
+
+// The correct occupant for each placeholder
+const correctBoxes = {
+  boxA: 'A',
+  boxB: 'B',
+  boxC: 'C'
+};
+
+// The correct direction for each arrow
+const correctArrows = {
+  arrowAB: '→',
+  arrowBC: '→',
+  arrowCA: '→'
+};
+
+// --------------------------------------------------------
+//  drawPlaceholders: draws the boxes & lines in an equilateral triangle
+// --------------------------------------------------------
+function drawPlaceholders() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = 'black';
+  ctx.font = '14px Arial';
+
+  // Draw placeholder boxes
+  placeholders.forEach(p => {
+    ctx.strokeRect(p.x, p.y, p.w, p.h);
+    ctx.fillText(p.name, p.x + 5, p.y + 15);
+  });
+
+  // compute the center of each placeholder
+  const centerA = {
+    x: placeholders[0].x + placeholders[0].w/2,
+    y: placeholders[0].y + placeholders[0].h/2
+  };
+  const centerB = {
+    x: placeholders[1].x + placeholders[1].w/2,
+    y: placeholders[1].y + placeholders[1].h/2
+  };
+  const centerC = {
+    x: placeholders[2].x + placeholders[2].w/2,
+    y: placeholders[2].y + placeholders[2].h/2
+  };
+
+  // A->B (green) => diagonal
+  ctx.beginPath();
+  ctx.moveTo(centerA.x, centerA.y);
+  ctx.lineTo(centerB.x, centerB.y);
+  ctx.strokeStyle = 'green';
+  ctx.stroke();
+
+  // B->C (red) => horizontal-ish
+  ctx.beginPath();
+  ctx.moveTo(centerB.x, centerB.y);
+  ctx.lineTo(centerC.x, centerC.y);
+  ctx.strokeStyle = 'red';
+  ctx.stroke();
+
+  // C->A (blue) => diagonal
+  ctx.beginPath();
+  ctx.moveTo(centerC.x, centerC.y);
+  ctx.lineTo(centerA.x, centerA.y);
+  ctx.strokeStyle = 'blue';
+  ctx.stroke();
+}
+
+drawPlaceholders();
+
+// --------------------------------------------------------
+//  DRAG & DROP LOGIC for boxes A, B, C
+// --------------------------------------------------------
+let selected = null;
+let offsetX = 0;
+let offsetY = 0;
+
+const container = document.getElementById('canvasContainer');
+const draggables = document.querySelectorAll('.draggable');
+
+// Mousedown: pick up item
+
+draggables.forEach(d => {
+  d.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    selected = d;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    selected.style.cursor = 'grabbing';
+  });
+});
+
+// Mousemove: move item
+container.addEventListener('mousemove', (e) => {
+  if (!selected) return;
+
+  const rect = container.getBoundingClientRect();
+  let newLeft = e.clientX - rect.left - offsetX;
+  let newTop  = e.clientY - rect.top  - offsetY;
+
+  // keep in container
+  if (newLeft < 0) newLeft = 0;
+  if (newTop < 0) newTop = 0;
+  if (newLeft + selected.offsetWidth > rect.width) {
+    newLeft = rect.width - selected.offsetWidth;
+  }
+  if (newTop + selected.offsetHeight > rect.height) {
+    newTop = rect.height - selected.offsetHeight;
+  }
+
+  selected.style.left = newLeft + 'px';
+  selected.style.top  = newTop  + 'px';
+});
+
+// Mouseup: drop item onto placeholder
+container.addEventListener('mouseup', (e) => {
+  if (!selected) return;
+  selected.style.cursor = 'grab';
+
+  const canvasRect = canvas.getBoundingClientRect();
+  const dropX = e.clientX - canvasRect.left;
+  const dropY = e.clientY - canvasRect.top;
+
+  // remove occupant from any placeholder that had this box
+  placeholders.forEach(p => {
+    if (p.occupant === selected.id) {
+      p.occupant = null;
+    }
+  });
+
+  // see if we are dropping over a placeholder
+  placeholders.forEach(p => {
+    if (
+      dropX >= p.x && dropX <= p.x + p.w &&
+      dropY >= p.y && dropY <= p.y + p.h
+    ) {
+      p.occupant = selected.id;
+      // snap to center
+      const elemW = selected.offsetWidth;
+      const elemH = selected.offsetHeight;
+      selected.style.left = (p.x + (p.w - elemW)/2) + 'px';
+      selected.style.top  = (p.y + (p.h - elemH)/2) + 'px';
+    }
+  });
+
+  selected = null;
+});
+
+// --------------------------------------------------------
+//  ARROW DIRECTION LOGIC: click to flip
+// --------------------------------------------------------
+const arrows = document.querySelectorAll('.arrow');
+arrows.forEach(ar => {
+  ar.addEventListener('click', () => {
+    ar.textContent = (ar.textContent === '→') ? '←' : '→';
+  });
+});
+
+// --------------------------------------------------------
+//  CHECK: compare final box occupant + arrow directions
+// --------------------------------------------------------
+const checkButton = document.getElementById('checkButton');
+const feedback = document.getElementById('feedback');
+
+checkButton.addEventListener('click', () => {
+  let isCorrect = true;
+
+  // 1) Check if each placeholder has correct occupant
+  placeholders.forEach(p => {
+    const correctBoxID = correctBoxes[p.name];
+    if (!correctBoxID) return;
+    if (p.occupant !== correctBoxID) {
+      isCorrect = false;
+    }
+  });
+
+  // 2) Check arrow directions
+  Object.keys(correctArrows).forEach(arrowID => {
+    const arrowElem = document.getElementById(arrowID);
+    const currentDir = arrowElem ? arrowElem.textContent.trim() : '';
+    if (currentDir !== correctArrows[arrowID]) {
+      isCorrect = false;
+    }
+  });
+
+  if (isCorrect) {
+    feedback.textContent = 'Correct!';
+    feedback.style.color = 'green';
+  } else {
+    feedback.textContent = 'Try again!';
+    feedback.style.color = 'red';
+  }
+});
+</script>
+</body>
+</html>
