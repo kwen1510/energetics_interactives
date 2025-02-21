@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drag and Drop Sorting</title>
+  <title>Drag and Drop Sorting with Click Swap</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,7 +21,7 @@
       display: flex;
       justify-content: center;
       margin: 20px auto;
-      gap: 30px; /* Increased gap between boxes */
+      gap: 30px;
     }
     .box, #items {
       width: 240px;
@@ -35,8 +35,7 @@
       word-wrap: break-word;
     }
     .box {
-      /* Indicate drop zone with pointer cursor */
-      cursor: pointer;
+      cursor: pointer; /* Indicate drop zone */
     }
     .box h3 {
       margin-top: 0;
@@ -61,7 +60,7 @@
       transform: scale(1.05);
       box-shadow: 0 5px 10px rgba(0,0,0,0.2);
     }
-    /* Style for the selected element in click-drop mode */
+    /* Highlight selected item for click-swap mode */
     .selected {
       outline: 3px dashed #ffb4a2;
       background-color: #ffefef;
@@ -114,7 +113,6 @@
 
   <script>
     // Dynamic feedback rules.
-    // For example, here the rule requires that "C" (Electron Affinity) must come before "B" (Ionisation Energy).
     const feedbackRules = [
       {
         if: "C",
@@ -139,50 +137,61 @@
       {
         if: "C",
         comes_before: "A",
-        feedback: "You need to form the gaseous atoms before performing Ea"
+        feedback: "You need to form the gaseous atoms before performing Ea."
       },
       {
         if: "B",
         comes_before: "A",
-        feedback: "You need to form the gaseous atoms before performing IE"
+        feedback: "You need to form the gaseous atoms before performing IE."
       }
-      // Additional rules can be added here.
     ];
 
-    let selectedElement = null; // For click-drop mode.
+    let selectedElement = null; // For click-swap mode.
 
     function allowDrop(event) {
       event.preventDefault();
-      // Change drop effect to provide visual feedback
+      // Visual cue for drag-drop.
       event.dataTransfer.dropEffect = "move";
     }
 
     function drag(event) {
-      // Clear any selected element when a drag starts.
+      // Clear any click-selection when a drag starts.
       clearSelection();
       event.dataTransfer.setData("text", event.target.id);
     }
 
     // Click handler for draggable items.
     function selectItem(event) {
-      // Prevent triggering when the container is clicked.
       event.stopPropagation();
-      // Toggle selection: if already selected, deselect it.
-      if (selectedElement === event.currentTarget) {
-        clearSelection();
+      const clicked = event.currentTarget;
+      // If there is already a selected element and it's not the same as the clicked element...
+      if (selectedElement && selectedElement !== clicked) {
+        // If both are in the sortable box, swap them.
+        if (selectedElement.parentElement.id === "sortableBox" && clicked.parentElement.id === "sortableBox") {
+          swapElements(selectedElement, clicked);
+          clearSelection();
+          return;
+        }
+        // If the selected element is in the right (#items) and the clicked is in the left, insert before.
+        if (selectedElement.parentElement.id === "items" && clicked.parentElement.id === "sortableBox") {
+          document.getElementById("sortableBox").insertBefore(selectedElement, clicked);
+          clearSelection();
+          return;
+        }
       } else {
+        // No item is selected yet, so select this one.
         clearSelection();
-        selectedElement = event.currentTarget;
+        selectedElement = clicked;
         selectedElement.classList.add("selected");
       }
     }
 
-    // When clicking in the sortable box, drop the selected item.
+    // Handle clicks in the sortable box (background area).
     function clickDrop(event) {
-      // Only act if there is a selected element.
-      if (selectedElement) {
-        const container = document.getElementById("sortableBox");
-        // Compute the drop position based on the click Y coordinate.
+      if (!selectedElement) return;
+      const container = document.getElementById("sortableBox");
+      // If click target is not a draggable (i.e. blank area), drop the selected element.
+      if (!event.target.classList.contains("draggable")) {
         const afterElement = getDragAfterElement(container, event.clientY);
         if (afterElement == null) {
           container.appendChild(selectedElement);
@@ -193,7 +202,17 @@
       }
     }
 
-    // Clear the current selection.
+    // Swap two elements in the DOM.
+    function swapElements(el1, el2) {
+      const parent = el1.parentNode;
+      const placeholder = document.createElement("div");
+      parent.insertBefore(placeholder, el1);
+      parent.insertBefore(el1, el2);
+      parent.insertBefore(el2, placeholder);
+      parent.removeChild(placeholder);
+    }
+
+    // Clear current selection.
     function clearSelection() {
       if (selectedElement) {
         selectedElement.classList.remove("selected");
@@ -215,6 +234,7 @@
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
+    // Standard drop handler for drag-and-drop.
     function drop(event) {
       event.preventDefault();
       clearSelection();
@@ -230,25 +250,22 @@
     }
 
     function checkOrder() {
-      // Get the current order of draggable items in the sortable box.
+      // Get current order in the sortable box.
       const sortedItems = Array.from(document.getElementById("sortableBox").children)
                             .filter(el => el.classList.contains("draggable"))
                             .map(el => el.id);
-      // The correct order is defined as top-to-bottom: D, C, B, A.
+      // Correct order: top-to-bottom D, C, B, A.
       const correctOrder = ["D", "C", "B", "A"];
 
-      // If the order is exactly correct, display a success message.
       if (sortedItems.join() === correctOrder.join()) {
         document.getElementById("feedback").innerText = "Correct order! Well done!";
         document.getElementById("feedback").style.color = "green";
         return;
       }
       
-      // Iterate through the dynamic feedback rules.
       for (let rule of feedbackRules) {
         const indexIf = sortedItems.indexOf(rule.if);
         const indexComesBefore = sortedItems.indexOf(rule.comes_before);
-        // For a rule stating that X should come before Y, trigger an error if X is below Y.
         if (indexIf !== -1 && indexComesBefore !== -1 && indexIf > indexComesBefore) {
           document.getElementById("feedback").innerText = rule.feedback;
           document.getElementById("feedback").style.color = "red";
@@ -256,14 +273,12 @@
         }
       }
 
-      // Fallback feedback if no specific rule applies.
       document.getElementById("feedback").innerText = "Incorrect order. Try again!";
       document.getElementById("feedback").style.color = "red";
     }
 
     function resetItems() {
       const itemsContainer = document.getElementById("items");
-      // Reset the items back to the original container.
       const originalOrder = ["A", "B", "C", "D"];
       originalOrder.forEach(id => {
         const element = document.getElementById(id);
@@ -273,7 +288,7 @@
       document.getElementById("feedback").innerText = "";
     }
 
-    // Clear any selection if clicking outside a draggable.
+    // Clear selection if clicking outside a draggable.
     document.body.addEventListener("click", (event) => {
       if (!event.target.classList.contains("draggable")) {
         clearSelection();
