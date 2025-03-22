@@ -8,11 +8,12 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background-color: #f5f5f5;
         }
         #container {
-            width: 800px;
+            width: 100%;
+            max-width: 800px;
             height: 500px;
             background-color: white;
             border: 1px solid #ddd;
@@ -21,8 +22,8 @@
             overflow: hidden;
         }
         .circle {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background-color: #3498db;
             color: white;
@@ -80,22 +81,26 @@
             100% { transform: scale(1); }
         }
         #instructions {
-            margin: 20px auto;
-            width: 800px;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 800px;
             padding: 15px;
             background-color: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 5px;
+            box-sizing: border-box;
         }
         #status {
-            margin: 20px auto;
-            width: 800px;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 800px;
             padding: 10px;
             background-color: #e8f4fd;
             border: 1px solid #bedcf3;
             border-radius: 5px;
             display: none;
             font-weight: bold;
+            box-sizing: border-box;
         }
         svg {
             position: absolute;
@@ -143,10 +148,42 @@
         #toggle-mode-btn:hover {
             background-color: #2980b9;
         }
-        /* Add responsive styles for mobile */
+        /* Improved responsive styles */
         @media (max-width: 850px) {
-            #container, #instructions, #status {
-                width: 95%;
+            #container {
+                height: 450px;
+            }
+            .circle {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+        }
+        @media (max-width: 600px) {
+            #container {
+                height: 400px;
+            }
+            .circle {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            h2 {
+                font-size: 1.25rem;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 400px) {
+            #container {
+                height: 350px;
+            }
+            .circle {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
             }
         }
     </style>
@@ -161,7 +198,7 @@
         </ul>
         <p>Identical labels (A-A, B-B, C-C) will connect with a green glow and become permanently joined.</p>
         <p>Non-matching circles will show a red glow and can be separated.</p>
-        <div class="tip">Tip: On mobile devices, the click method works better!</div>
+        <div class="tip">Tip: On this device, the click method will work better than drag and drop!</div>
     </div>
     
     <div id="status" style="display: none;"></div>
@@ -182,19 +219,97 @@
     </div>
 
     <script>
-        // Initial node definitions - three distinct rows
+        // Variables for responsive positioning
+        let containerWidth = 0;
+        let containerHeight = 0;
+        let circleRadius = 35; // Will adjust based on screen size
+        let leftColumn = 0;
+        let rightColumn = 0;
+        let yPositions = [];
+        
+        // Calculate responsive positions
+        function calculatePositions() {
+            const container = document.getElementById('container');
+            containerWidth = container.clientWidth;
+            containerHeight = container.clientHeight;
+            
+            // Set circle radius based on viewport
+            if (window.innerWidth <= 400) {
+                circleRadius = 22.5;
+            } else if (window.innerWidth <= 600) {
+                circleRadius = 25;
+            } else if (window.innerWidth <= 850) {
+                circleRadius = 30;
+            } else {
+                circleRadius = 35;
+            }
+            
+            // Calculate column positions (25% and 75% of width)
+            leftColumn = containerWidth * 0.25;
+            rightColumn = containerWidth * 0.75;
+            
+            // Calculate row positions (evenly spaced)
+            const rowCount = 3;
+            const marginY = containerHeight * 0.1;
+            const availableHeight = containerHeight - (2 * marginY);
+            const rowHeight = availableHeight / (rowCount - 1);
+            
+            yPositions = [];
+            for (let i = 0; i < rowCount; i++) {
+                yPositions.push(marginY + (i * rowHeight));
+            }
+            
+            // Update node positions
+            if (nodes && nodes.length > 0) {
+                // Update Row 1
+                updateNodePosition("A1", leftColumn, yPositions[0]);
+                updateNodePosition("C1", rightColumn, yPositions[0]);
+                
+                // Update Row 2
+                updateNodePosition("A2", leftColumn, yPositions[1]);
+                updateNodePosition("B1", rightColumn, yPositions[1]);
+                
+                // Update Row 3
+                updateNodePosition("C2", leftColumn, yPositions[2]);
+                updateNodePosition("B2", rightColumn, yPositions[2]);
+                
+                // Update visual positions of circles
+                for (const nodeId in circles) {
+                    const node = nodes.find(n => n.id === nodeId);
+                    if (node) {
+                        const circle = circles[nodeId];
+                        circle.style.left = `${node.x - circleRadius}px`;
+                        circle.style.top = `${node.y - circleRadius}px`;
+                    }
+                }
+                
+                // Update arrow connections
+                updateArrows();
+            }
+        }
+        
+        // Helper function to update node position
+        function updateNodePosition(id, x, y) {
+            const nodeIndex = nodes.findIndex(node => node.id === id);
+            if (nodeIndex !== -1) {
+                nodes[nodeIndex].x = x;
+                nodes[nodeIndex].y = y;
+            }
+        }
+
+        // Initial node definitions - three distinct rows, positions will be calculated
         const initialNodes = [
             // Row 1: A → C
-            { id: "A1", label: "A", x: 200, y: 100 },
-            { id: "C1", label: "C", x: 500, y: 100 },
+            { id: "A1", label: "A", x: 0, y: 0 },
+            { id: "C1", label: "C", x: 0, y: 0 },
             
             // Row 2: A → B
-            { id: "A2", label: "A", x: 200, y: 250 },
-            { id: "B1", label: "B", x: 500, y: 250 },
+            { id: "A2", label: "A", x: 0, y: 0 },
+            { id: "B1", label: "B", x: 0, y: 0 },
             
             // Row 3: C → B
-            { id: "C2", label: "C", x: 200, y: 400 },
-            { id: "B2", label: "B", x: 500, y: 400 }
+            { id: "C2", label: "C", x: 0, y: 0 },
+            { id: "B2", label: "B", x: 0, y: 0 }
         ];
 
         // Initial connections
@@ -232,8 +347,8 @@
                 circle.className = 'circle';
                 circle.id = `circle-${node.id}`;
                 circle.textContent = node.label;
-                circle.style.left = `${node.x - 40}px`;
-                circle.style.top = `${node.y - 40}px`;
+                circle.style.left = `${node.x - circleRadius}px`;
+                circle.style.top = `${node.y - circleRadius}px`;
                 
                 // Make the circle draggable and clickable
                 circle.addEventListener('mousedown', handleMouseDown);
@@ -367,8 +482,8 @@
             let newY = clientY - containerRect.top - offsetY;
             
             // Ensure circle stays within container
-            newX = Math.max(0, Math.min(containerRect.width - 80, newX));
-            newY = Math.max(0, Math.min(containerRect.height - 80, newY));
+            newX = Math.max(0, Math.min(containerRect.width - (circleRadius * 2), newX));
+            newY = Math.max(0, Math.min(containerRect.height - (circleRadius * 2), newY));
             
             // Update element position
             draggedElement.style.left = `${newX}px`;
@@ -377,8 +492,8 @@
             // Update circle position in our data
             const nodeIndex = nodes.findIndex(node => node.id === id);
             if (nodeIndex !== -1) {
-                nodes[nodeIndex].x = newX + 40;
-                nodes[nodeIndex].y = newY + 40;
+                nodes[nodeIndex].x = newX + circleRadius;
+                nodes[nodeIndex].y = newY + circleRadius;
             }
             
             // If this node is merged, check if we need to separate them
@@ -398,8 +513,8 @@
                         
                         // Update visual position
                         const mergedElement = circles[mergedWithId];
-                        mergedElement.style.left = `${mergedNode.x - 40}px`;
-                        mergedElement.style.top = `${mergedNode.y - 40}px`;
+                        mergedElement.style.left = `${mergedNode.x - circleRadius}px`;
+                        mergedElement.style.top = `${mergedNode.y - circleRadius}px`;
                     }
                 } else {
                     // For incorrectly merged nodes, allow separation based on velocity
@@ -419,8 +534,8 @@
                             
                             // Update visual position with slight offset for wrong merges
                             const mergedElement = circles[mergedWithId];
-                            mergedElement.style.left = `${mergedNode.x - 40 + 5}px`;
-                            mergedElement.style.top = `${mergedNode.y - 40 + 5}px`;
+                            mergedElement.style.left = `${mergedNode.x - circleRadius + 5}px`;
+                            mergedElement.style.top = `${mergedNode.y - circleRadius + 5}px`;
                         }
                     }
                 }
@@ -463,7 +578,7 @@
                         const dy = node.y - draggedNode.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         
-                        if (distance < 80) { // Threshold for merging
+                        if (distance < (circleRadius * 2)) { // Threshold for merging
                             // Check if the nodes have the same label for correct merge
                             if (node.label === draggedNode.label) {
                                 mergeNodes(draggedId, node.id, true); // Correct merge
@@ -529,8 +644,8 @@
                             clickedNode.y = selectedNode.y;
                             
                             // Update visual position
-                            circles[clickedId].style.left = `${clickedNode.x - 40}px`;
-                            circles[clickedId].style.top = `${clickedNode.y - 40}px`;
+                            circles[clickedId].style.left = `${clickedNode.x - circleRadius}px`;
+                            circles[clickedId].style.top = `${clickedNode.y - circleRadius}px`;
                             
                             // Merge the nodes
                             mergeNodes(selectedNodeId, clickedId, true);
@@ -545,8 +660,8 @@
                             clickedNode.y = selectedNode.y;
                             
                             // Update visual position
-                            circles[clickedId].style.left = `${clickedNode.x - 40}px`;
-                            circles[clickedId].style.top = `${clickedNode.y - 40}px`;
+                            circles[clickedId].style.left = `${clickedNode.x - circleRadius}px`;
+                            circles[clickedId].style.top = `${clickedNode.y - circleRadius}px`;
                             
                             // Temporary merge with wrong status
                             mergeNodes(selectedNodeId, clickedId, false);
@@ -561,8 +676,8 @@
                                 clickedNode.y = originalY;
                                 
                                 // Update visual position
-                                circles[clickedId].style.left = `${clickedNode.x - 40}px`;
-                                circles[clickedId].style.top = `${clickedNode.y - 40}px`;
+                                circles[clickedId].style.left = `${clickedNode.x - circleRadius}px`;
+                                circles[clickedId].style.top = `${clickedNode.y - circleRadius}px`;
                                 
                                 // Update arrows
                                 updateArrows();
@@ -649,9 +764,9 @@
                 const dy = node.y - draggedNode.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < 120) { // Magnetic attraction range
+                if (distance < (circleRadius * 3)) { // Magnetic attraction range
                     const otherElement = circles[node.id];
-                    const intensity = Math.max(0, 1 - distance / 120);
+                    const intensity = Math.max(0, 1 - distance / (circleRadius * 3));
                     const glowSize = 15 * intensity;
                     
                     // Add magnetic glow effect - green for same letter, red for different
@@ -700,21 +815,15 @@
             // Update visual position with a little offset to see both
             if (isCorrectMerge) {
                 // Perfectly aligned for correct matches
-                circle2.style.left = `${node2.x - 40}px`;
-                circle2.style.top = `${node2.y - 40}px`;
+                circle2.style.left = `${node2.x - circleRadius}px`;
+                circle2.style.top = `${node2.y - circleRadius}px`;
             } else {
                 // Slightly offset for wrong matches to show both
-                circle2.style.left = `${node2.x - 40 + 5}px`;
-                circle2.style.top = `${node2.y - 40 + 5}px`;
+                circle2.style.left = `${node2.x - circleRadius + 5}px`;
+                circle2.style.top = `${node2.y - circleRadius + 5}px`;
             }
             
             // Update the connections for the merged nodes
-            updateConnectionsAfterMerge(node1Id, node2Id);
-        }
-
-        // Function to update connections after merging nodes
-        function updateConnectionsAfterMerge(node1Id, node2Id) {
-            // Update arrows to reflect the merged nodes
             updateArrows();
         }
 
@@ -754,9 +863,8 @@
                 if (length === 0) return; // Skip if points are the same
                 
                 // Normalize and scale to circle radius
-                const radius = 40;
-                const nx = dx / length * radius;
-                const ny = dy / length * radius;
+                const nx = dx / length * circleRadius;
+                const ny = dy / length * circleRadius;
                 
                 // Calculate start and end points
                 const startX = from.x + nx;
@@ -777,7 +885,7 @@
                 svg.appendChild(arrow);
             });
         }
-
+        
         // Reset the diagram
         function resetDiagram() {
             nodes = JSON.parse(JSON.stringify(initialNodes));
@@ -785,6 +893,8 @@
             mergedNodes = {};
             selectedNodeId = null;
             
+            // Recalculate positions before creating circles
+            calculatePositions();
             createCircles();
             updateArrows();
             
@@ -807,6 +917,8 @@
 
         // Initialize the app
         function init() {
+            // Calculate responsive positions first
+            calculatePositions();
             createCircles();
             updateArrows();
             
@@ -817,6 +929,25 @@
             if (isTouchDevice()) {
                 document.querySelector('.tip').textContent = 'Tip: On this device, the click method will work better than drag and drop!';
             }
+            
+            // Add resize event listener to handle responsiveness
+            window.addEventListener('resize', debounce(function() {
+                calculatePositions();
+                updateArrows();
+            }, 250));
+        }
+        
+        // Debounce function to limit resize recalculations
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
         }
 
         // Start the app when the window loads
