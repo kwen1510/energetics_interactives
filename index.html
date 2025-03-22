@@ -3,118 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energetics HTML Resources</title>
+    <title>Energetics Interactives</title>
     <style>
         :root {
-            --primary-color: #3498db;
+            --primary-color: #4a6fa5;
             --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
             --text-color: #333;
-            --background-color: #f5f5f5;
+            --background-color: #f7f9fc;
             --card-background: #ffffff;
-            --hover-color: #2980b9;
+            --hover-color: #3a5a80;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         body {
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
-            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
         }
 
         .container {
-            max-width: 800px;
+            width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: var(--secondary-color);
+            margin-bottom: 2.5rem;
+            padding: 2.5rem 1.5rem;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
         }
 
         h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .html-files {
+        .resources {
             background-color: var(--card-background);
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
         }
 
-        .file-list {
-            list-style-type: none;
+        .resource-section {
+            margin-bottom: 2rem;
         }
 
-        .file-item {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        .section-title {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            display: inline-block;
         }
 
-        .file-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
         }
 
-        .file-link {
+        .resource-card {
+            background-color: rgba(74, 111, 165, 0.05);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: var(--transition);
+            height: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+            border-color: rgba(74, 111, 165, 0.2);
+        }
+
+        .resource-link {
             display: flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             text-decoration: none;
             color: var(--text-color);
-            padding: 12px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .file-link:hover {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--hover-color);
-            transform: translateX(5px);
-        }
-
-        .file-icon {
-            margin-right: 15px;
-            color: var(--primary-color);
-        }
-
-        .file-name {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        footer {
-            margin-top: 40px;
+            height: 100%;
+            padding: 1.5rem;
             text-align: center;
-            color: #777;
-            font-size: 0.9rem;
+            transition: var(--transition);
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
+        .resource-icon {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            height: 48px;
+            width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(74, 111, 165, 0.1);
+            padding: 0.75rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .resource-card:hover .resource-icon {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .resource-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* Specific icons for different topics */
+        .calorimetry-icon {
+            color: #e67e22;
+        }
+        
+        .resource-card:hover .calorimetry-icon {
+            background-color: #e67e22;
+        }
+        
+        .energy-cycle-icon {
+            color: #27ae60;
+        }
+        
+        .resource-card:hover .energy-cycle-icon {
+            background-color: #27ae60;
+        }
+        
+        .energy-level-icon {
+            color: #8e44ad;
+        }
+        
+        .resource-card:hover .energy-level-icon {
+            background-color: #8e44ad;
+        }
+
+        @media (max-width: 900px) {
+            .resource-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
             }
             
-            .file-name {
+            header {
+                padding: 2rem 1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .resources {
+                padding: 1.5rem;
+            }
+            
+            .resource-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .resource-link {
+                padding: 1rem;
+            }
+            
+            .resource-name {
                 font-size: 1rem;
             }
         }
@@ -123,79 +201,87 @@
 <body>
     <div class="container">
         <header>
-            <h1>Energetics HTML Resources</h1>
-            <div class="subtitle">Lecture Notes and References</div>
+            <h1>Energetics Interactives</h1>
         </header>
 
-        <div class="html-files">
-            <ul class="file-list">
-                <li class="file-item">
-                    <a href="calorimetry_1.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">calorimetry_1.html</span>
-                    </a>
-                </li>
-                <li class="file-item">
-                    <a href="calorimetry_2.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">calorimetry_2.html</span>
-                    </a>
-                </li>
-                <li class="file-item">
-                    <a href="energy_cycle_1.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">energy_cycle_1.html</span>
-                    </a>
-                </li>
-                <li class="file-item">
-                    <a href="energy_cycle_2.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">energy_cycle_2.html</span>
-                    </a>
-                </li>
-                <li class="file-item">
-                    <a href="energy_level_1.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">energy_level_1.html</span>
-                    </a>
-                </li>
-                <li class="file-item">
-                    <a href="energy_level_2.html" class="file-link">
-                        <div class="file-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </div>
-                        <span class="file-name">energy_level_2.html</span>
-                    </a>
-                </li>
-            </ul>
+        <div class="resources">
+            <div class="resource-section">
+                <!-- <h2 class="section-title">Part 1 Materials</h2> -->
+                <div class="resource-grid">
+                    <div class="resource-card">
+                        <a href="calorimetry_1.html" class="resource-link" target="_blank">
+                            <div class="resource-icon calorimetry-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2v8a2 2 0 0 1-2 2H2"></path>
+                                    <path d="M14 2v8a2 2 0 0 0 2 2h6"></path>
+                                    <path d="M8 16c0 2 1 4 4 4s4-2 4-4"></path>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Calorimetry 1</span>
+                        </a>
+                    </div>
+                    <div class="resource-card">
+                        <a href="energy_cycle_1.html" class="resource-link" target="_blank">
+                            <div class="resource-icon energy-cycle-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M16 12a4 4 0 1 1-8 0M12 8v8"></path>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Energy Cycle 1</span>
+                        </a>
+                    </div>
+                    <div class="resource-card">
+                        <a href="energy_level_1.html" class="resource-link" target="_blank">
+                            <div class="resource-icon energy-level-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Energy Level 1</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="resource-section">
+                <!-- <h2 class="section-title">Part 2 Materials</h2> -->
+                <div class="resource-grid">
+                    <div class="resource-card">
+                        <a href="calorimetry_2.html" class="resource-link" target="_blank">
+                            <div class="resource-icon calorimetry-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2v8a2 2 0 0 1-2 2H2"></path>
+                                    <path d="M14 2v8a2 2 0 0 0 2 2h6"></path>
+                                    <path d="M8 16c0 2 1 4 4 4s4-2 4-4"></path>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Calorimetry 2</span>
+                        </a>
+                    </div>
+                    <div class="resource-card">
+                        <a href="energy_cycle_2.html" class="resource-link" target="_blank">
+                            <div class="resource-icon energy-cycle-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M16 12a4 4 0 1 1-8 0M12 8v8"></path>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Energy Cycle 2</span>
+                        </a>
+                    </div>
+                    <div class="resource-card">
+                        <a href="energy_level_2.html" class="resource-link" target="_blank">
+                            <div class="resource-icon energy-level-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="resource-name">Energy Level 2</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
