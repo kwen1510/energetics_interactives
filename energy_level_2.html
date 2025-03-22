@@ -251,7 +251,7 @@
         
         <div class="controls">
             <button class="btn-show-answers" id="show-answers">Show Answers</button>
-            <button class="btn-reset" id="reset-game">Reset Game</button>
+            <!-- <button class="btn-reset" id="reset-game">Reset Game</button> -->
         </div>
     </div>
     
@@ -440,29 +440,29 @@
                 }, 3000);
             });
             
-            // Reset game button
-            resetGameBtn.addEventListener('click', function() {
-                foundHotspots = [];
-                showingAnswers = false;
+            // // Reset game button
+            // resetGameBtn.addEventListener('click', function() {
+            //     foundHotspots = [];
+            //     showingAnswers = false;
                 
-                hotspots.forEach(hotspot => {
-                    const hotspotEl = document.getElementById(`hotspot-${hotspot.id}`);
-                    hotspotEl.style.display = 'none';
-                    hotspotEl.classList.remove('found');
-                });
+            //     hotspots.forEach(hotspot => {
+            //         const hotspotEl = document.getElementById(`hotspot-${hotspot.id}`);
+            //         hotspotEl.style.display = 'none';
+            //         hotspotEl.classList.remove('found');
+            //     });
                 
-                // Hide tooltip
-                tooltip.classList.remove('visible');
+            //     // Hide tooltip
+            //     tooltip.classList.remove('visible');
                 
-                // Show reset message briefly
-                showTooltip("Game reset! Find the mistakes in the Born-Haber cycle.", true);
+            //     // Show reset message briefly
+            //     showTooltip("Game reset! Find the mistakes in the Born-Haber cycle.", true);
                 
-                setTimeout(() => {
-                    tooltip.classList.remove('visible');
-                }, 2000);
+            //     setTimeout(() => {
+            //         tooltip.classList.remove('visible');
+            //     }, 2000);
                 
-                updateProgress();
-            });
+            //     updateProgress();
+            // });
             
             function updateProgress() {
                 const progress = (foundHotspots.length / hotspots.length) * 100;
