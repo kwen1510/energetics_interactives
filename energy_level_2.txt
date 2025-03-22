@@ -1,0 +1,16 @@
+# List of errors
+
+There should be a zero here for Born-Haber cycles
+
+There are electrons missing here. Electrons should be produced from IE
+
+First EA should be exothermic
+
+This should be first IE + second IE. There are cases where you will use 2 x first IE (e.g. Na in sodium oxide)
+
+BE for oxygen gas gives you two oxygen atoms. In fact this should be half BE
+
+
+
+# File name
+Energy Level Diagram with errors.png

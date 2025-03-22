@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calorimetry Drag and Drop</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+      color: #333;
+      text-align: center;
+      min-height: 100vh;
+      max-width: 900px;
+      margin: 0 auto;
+      font-size: 14px;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background: #e0e0e0;
+      margin: 15px 0;
+    }
+
+    .header {
+      margin: 10px auto;
+      max-width: 800px;
+    }
+
+    h2 {
+      margin-top: 10px;
+      color: #2c3e50;
+      font-size: 20px;
+    }
+
+    .equation {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+      background-color: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+
+    .instructions {
+      margin: 20px auto;
+      font-size: 18px;
+      line-height: 1.5;
+      max-width: 800px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #container {
+      margin: 15px auto;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 20px;
+      padding: 0;
+      max-width: 800px;
+    }
+
+    .category {
+      width: 100%;
+      max-width: 350px;
+      min-height: 180px;
+      border: 2px dashed #6699cc;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      align-items: center;
+    }
+
+    .category:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .category h3 {
+      margin-top: 0;
+      color: #2c3e50;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .category-items {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .item {
+      margin: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      cursor: grab;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      user-select: none;
+      transition: transform 0.2s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 180px;
+    }
+
+    .item img {
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .item:hover {
+      transform: scale(1.02);
+    }
+
+    .item p {
+      margin: 5px 0;
+      font-weight: bold;
+    }
+
+    /* Highlight for the selected item on mobile */
+    .selected {
+      outline: 3px solid #ffcc00;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    }
+
+    #items {
+      margin: 15px auto;
+      max-width: 800px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #items h3 {
+      margin-top: 5px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    #items-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .controls {
+      margin: 15px auto;
+    }
+
+    button {
+      margin: 5px;
+      padding: 8px 16px;
+      font-size: 14px;
+      background-color: #6699cc;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #557aab;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #feedback {
+      margin: 20px auto;
+      max-width: 800px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      min-height: 50px;
+    }
+
+    .correct {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .incorrect {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .equation {
+        font-size: 20px;
+        padding: 10px;
+      }
+      
+      .category {
+        min-height: 200px;
+      }
+      
+      .item {
+        margin: 8px;
+      }
+      
+      #container {
+        flex-wrap: wrap;
+      }
+      
+      .item img {
+        max-width: 120px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .equation {
+        font-size: 18px;
+      }
+      
+      body {
+        padding: 10px;
+      }
+      
+      button {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+    }
+
+
+    #items-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.item {
+  width: 200px;
+  height: 250px; /* Set a fixed height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px;
+}
+
+.item img {
+  width: 100%;
+  height: 180px; /* Fixed height for images */
+  object-fit: contain; /* Maintain aspect ratio */
+  margin-bottom: 10px;
+}
+
+.item p {
+  margin-top: auto; /* Push text to bottom */
+  text-align: center;
+  width: 100%;
+}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>Calorimetry Drag and Drop</h2>
+    <div class="equation">Now, let's explore this equation: mcΔT</div>
+    <div class="instructions">
+      It is important to know which masses go into the calorimetric calculations. Please arrange the correct set-up into the relevant boxes.
+      <hr>
+      <div id="feedback"></div>
+    </div>
+  </div>
+
+  <div id="container">
+    <div class="category" id="category1" ondragover="allowDrop(event)" ondrop="drop(event)">
+      <h3 id="title1"></h3>
+      <div class="category-items"></div>
+    </div>
+    <div class="category" id="category2" ondragover="allowDrop(event)" ondrop="drop(event)">
+      <h3 id="title2"></h3>
+      <div class="category-items"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="markItems()">Check Answers</button>
+    <button onclick="resetItems()">Reset</button>
+  </div>
+
+  <div id="items">
+    <h3>Drag or Tap Items Below:</h3>
+    <div id="items-container"></div>
+  </div>
+
+  <script>
+    const categories = [
+      "Mass of the initial solution only", 
+      "More than the mass of the initial solution"
+    ];
+    
+    const itemsArray = [
+      { 
+        text: "Adding a base to an initial acid solution", 
+        imgSrc: "Neutralisation.png", 
+        imgAlt: "Base being added to acid solution",
+        category: "More than the mass of the initial solution", 
+        feedback_if_wrong: "You have to consider the total volume when adding a base to an acid solution."
+      },
+      { 
+        text: "Dissolving a solid in water", 
+        imgSrc: "Dissolution.png", 
+        imgAlt: "Solid dissolving in water",
+        category: "Mass of the initial solution only", 
+        feedback_if_wrong: "For this calculation, you do not need to consider the mass of the solid being dissolved."
+      },
+      { 
+        text: "Burning fuel to heat up water", 
+        imgSrc: "Combustion.png", 
+        imgAlt: "Burning fuel heating water",
+        category: "Mass of the initial solution only", 
+        feedback_if_wrong: "There is only water in the beaker, so only its mass is considered in the calculation."
+      },
+    ];
+
+    // Set category titles
+    document.getElementById("title1").innerText = categories[0];
+    document.getElementById("title2").innerText = categories[1];
+
+    const itemsContainer = document.getElementById("items-container");
+    let selectedItem = null; // For tap-based selection
+
+    // Create draggable items with images and click support for mobile
+    itemsArray.forEach((item, index) => {
+      const div = document.createElement("div");
+      div.classList.add("item");
+      div.draggable = true;
+      div.ondragstart = drag;
+      div.id = "item" + index;
+      div.dataset.category = item.category;
+      div.dataset.feedback = item.feedback_if_wrong;
+      
+      // Create and add the image
+      const img = document.createElement("img");
+      img.src = item.imgSrc;
+      img.alt = item.imgAlt;
+      div.appendChild(img);
+      
+      // Add the text below the image
+      const p = document.createElement("p");
+      p.innerText = item.text;
+      div.appendChild(p);
+      
+      // Add tap event for mobile selection
+      div.addEventListener("click", function(e) {
+        e.stopPropagation();
+        // If this item is already selected, unselect it.
+        if (selectedItem === this) {
+          this.classList.remove("selected");
+          selectedItem = null;
+        } else {
+          // Unselect any previously selected item.
+          if (selectedItem) {
+            selectedItem.classList.remove("selected");
+          }
+          selectedItem = this;
+          this.classList.add("selected");
+        }
+      });
+
+      itemsContainer.appendChild(div);
+    });
+
+    // Allow dropping by preventing default behavior (for drag and drop on desktop)
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    // Set data for drag event
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.id);
+    }
+
+    /* Handle drop event for desktop drag and drop */
+    function drop(event) {
+      event.preventDefault();
+      let data = event.dataTransfer.getData("text");
+      let draggedElement = document.getElementById(data);
+      
+      // Find the category element (in case the drop target is a child element)
+      let targetCategory = event.target;
+      while (targetCategory && !targetCategory.classList.contains("category")) {
+        targetCategory = targetCategory.parentNode;
+      }
+      
+      if (targetCategory) {
+        // Append to the category-items div
+        const categoryItems = targetCategory.querySelector('.category-items');
+        categoryItems.appendChild(draggedElement);
+        
+        // If the dropped element was selected via tap, remove the selection.
+        if (selectedItem === draggedElement) {
+          draggedElement.classList.remove("selected");
+          selectedItem = null;
+        }
+      }
+    }
+
+    // Add tap support for category boxes
+    document.querySelectorAll(".category").forEach(category => {
+      category.addEventListener("click", function() {
+        // Only act if there is a selected item from tapping
+        if (selectedItem) {
+          // Append to the category-items div
+          const categoryItems = this.querySelector('.category-items');
+          categoryItems.appendChild(selectedItem);
+          
+          selectedItem.classList.remove("selected");
+          selectedItem = null;
+        }
+      });
+    });
+
+    /* Check items and provide feedback */
+    function markItems() {
+      let feedback = "";
+      let allCorrect = true;
+      let comments = "";
+      
+      document.querySelectorAll(".category").forEach(category => {
+        let categoryTitle = category.querySelector("h3").innerText;
+        let items = category.querySelectorAll(".item");
+        
+        items.forEach(item => {
+          if (item.dataset.category !== categoryTitle) {
+            comments += `<p class="incorrect">❌ ${item.querySelector("p").innerText}: ${item.dataset.feedback}</p>`;
+            allCorrect = false;
+          } else {
+            comments += `<p class="correct">✓ ${item.querySelector("p").innerText} is correctly placed!</p>`;
+          }
+        });
+      });
+      
+      if (allCorrect && document.querySelectorAll(".item").length === document.querySelectorAll(".category .item").length) {
+        feedback = `<p class="correct" style="font-size: 16px;">🎉 Great job! All items are correctly placed!</p>`;
+      } else if (document.querySelectorAll(".category .item").length < document.querySelectorAll(".item").length) {
+        feedback = `<p class="incorrect">Please place all items into categories.</p>`;
+      }
+      
+      if (comments) {
+        feedback += "<hr>" + comments;
+      }
+      
+      document.getElementById("feedback").innerHTML = feedback || `<p>Please drag items into the categories.</p>`;
+      
+      // Scroll and focus into the feedback area
+      document.getElementById("feedback").scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Reset items to their original container and clear feedback
+    function resetItems() {
+      for (let i = 0; i < itemsArray.length; i++) {
+        let itemElement = document.getElementById("item" + i);
+        itemsContainer.appendChild(itemElement);
+        // Remove any selection highlighting
+        itemElement.classList.remove("selected");
+      }
+      selectedItem = null;
+      document.getElementById("feedback").innerHTML = "";
+    }
+  </script>
+</body>
+</html>

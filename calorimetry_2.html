@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorimetry Flip Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .instruction-card {
+            background-color: #e3f2fd;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .instruction-card h1 {
+            color: #3465a4;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .instruction-card p {
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .flip-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px; /* Space between cards */
+        }
+
+        .flip-card {
+            width: 340px;
+            height: 480px;
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        .flip-card-front {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .flip-card-back {
+            background-color: #3465a4;
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto; /* Allow scrolling if content is too long */
+        }
+
+        .card-image {
+            width: 200px;
+            height: 200px;
+            margin: 20px 0;
+            object-fit: contain;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .card-equation {
+            font-size: 22px;
+            margin: 15px 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Improved fraction styling */
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .numerator, .denominator {
+            display: block;
+            text-align: center;
+        }
+        
+        .numerator {
+            border-bottom: 1px solid currentColor;
+            padding: 0 5px 2px 5px;
+        }
+        
+        .denominator {
+            padding: 2px 5px 0 5px;
+        }
+
+        /* Special style for header fraction */
+        .instruction-card .fraction .numerator {
+            border-bottom: 1px solid #3465a4;
+        }
+
+        .card-description {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-top: 20px;
+            text-align: center;
+            flex-grow: 1; /* Take available space */
+        }
+
+        .click-text {
+            font-size: 14px;
+            font-style: italic;
+            opacity: 0.8;
+            margin-top: 20px;
+            padding-top: 10px;
+            width: 100%;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+
+        .description-fraction {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 3px;
+}
+
+.description-numerator {
+  display: block;
+  border-bottom: 1px solid black;
+  padding: 0 3px;
+}
+
+.description-denominator {
+  display: block;
+  padding: 1px 3px 0;
+}
+
+.hint {
+  color: #888888; /* Light gray color */
+  font-size: 0.9em; /* Slightly smaller text */
+  font-style: italic;
+  opacity: 0.7; /* Reduces opacity for a faint look */
+  margin-top: 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Instruction Card -->
+        <div class="instruction-card">
+            <h1>Calorimetry: Understanding ΔH = -<span class="fraction"><span class="numerator">q</span><span class="denominator">n</span></span></h1>
+            <p>Now, let's explore this equation: <span>ΔH = -<span class="description-fraction">
+                <span class="description-numerator">q</span>
+                <span class="description-denominator">n</span>
+              </span></span></p>
+            <p>What is the "n" in the various examples?</p>
+            <p>Once you have your answer, please click the cards to check your answer.</p>
+            <p class="hint">Hint: you should refer to the definitions</p>
+        </div>
+        
+        <!-- Flip Cards Container -->
+        <div class="flip-cards-container">
+            <!-- Solution Flip Card -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <img src="Dissolution.png" alt="Solution Calorimetry" class="card-image">
+                        <h3 class="card-title">ΔH<sub>Solution</sub></h3>
+                        <!-- <p class="card-description">Enthalpy change when a solute dissolves in a solvent</p> -->
+                        <div class="click-text">Click to learn more</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3 class="card-title">ΔH<sub>Solution</sub></h3>
+                        <div class="card-equation">
+                            ΔH<sub>solution</sub> = -<span class="fraction"><span class="numerator">q</span><span class="denominator">n</span></span>
+                        </div>
+                        <p class="card-description">
+                            In solution calorimetry, "n" represents the number of moles of solute that dissolves in the solvent.
+                            <br><br>
+                            For example, when 1 mole of NaCl dissolves in water, n = 1 mol NaCl.
+                            <br><br>
+                            ΔH<sub>solution</sub> may be endothermic (positive) or exothermic (negative) depending on whether heat is absorbed or released during dissolution.
+                        </p>
+                        <div class="click-text">Click to flip back</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Combustion Flip Card -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <img src="Combustion.png" alt="Combustion Calorimetry" class="card-image">
+                        <h3 class="card-title">ΔH<sub>Combustion</sub></h3>
+                        <!-- <p class="card-description">Enthalpy change when a substance completely burns in oxygen</p> -->
+                        <div class="click-text">Click to learn more</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3 class="card-title">ΔH<sub>Combustion</sub></h3>
+                        <div class="card-equation">
+                            ΔH<sub>combustion</sub> = -<span class="fraction"><span class="numerator">q</span><span class="denominator">n</span></span>
+                        </div>
+                        <p class="card-description">
+                            In combustion calorimetry, "n" represents the number of moles of the substance being burned completely in excess oxygen.
+                            <br><br>
+                            For example, when burning methane (CH<sub>4</sub>), n = moles of CH<sub>4</sub> combusted.
+                            <br><br>
+                            ΔH<sub>combustion</sub> is almost always negative (exothermic) because combustion reactions release energy.
+                        </p>
+                        <div class="click-text">Click to flip back</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Neutralization Flip Card -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <img src="Neutralisation.png" alt="Neutralization Calorimetry" class="card-image">
+                        <h3 class="card-title">ΔH<sub>Neutralisation</sub></h3>
+                        <!-- <p class="card-description">Enthalpy change when an acid reacts with a base</p> -->
+                        <div class="click-text">Click to learn more</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3 class="card-title">ΔH<sub>Neutralisation</sub></h3>
+                        <div class="card-equation">
+                            ΔH<sub>neutralization</sub> = -<span class="fraction"><span class="numerator">q</span><span class="denominator">n</span></span>
+                        </div>
+                        <p class="card-description">
+                            In neutralization calorimetry, "n" represents the number of moles of water formed from the reaction. The amount of water formed depends on the limiting reagent.
+                            <br><br>
+                            For example, when HCl reacts with NaOH, n = moles of HCl (or moles of NaOH).
+                            <br><br>
+                            ΔH<sub>neutralization</sub> is typically negative (exothermic) because neutralization reactions generally release heat.
+                        </p>
+                        <div class="click-text">Click to flip back</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all flip cards
+        const flipCards = document.querySelectorAll('.flip-card');
+        
+        // Add click event to each flip card
+        flipCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+        });
+    </script>
+</body>
+</html>

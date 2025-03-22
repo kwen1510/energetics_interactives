@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Born Haber Cycle Sequencing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+        .instructions {
+            background-color: #eaf2f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .source-heading {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .image-source {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 80px;
+        }
+        .sequence-area {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: auto;
+        }
+        .image-item {
+            width: 150px;
+            height: 150px;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            transition: transform 0.3s;
+            position: relative;
+            background-color: white;
+        }
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .sequence-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            margin: 0 auto;
+            flex-wrap: nowrap;
+            min-width: max-content;
+        }
+        .drop-zone-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+        }
+        .drop-zone {
+            width: 160px;
+            height: 160px;
+            border: 2px dashed #3498db;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+        .drop-zone.active {
+            background-color: #d4e6f1;
+        }
+        .drop-zone.filled {
+            border-style: solid;
+            background-color: #eaf2f8;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 0 5px 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            text-align: center;
+        }
+        #feedback.success {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+        #feedback.error {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+        }
+        .connector-arrow {
+            font-size: 24px;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+        }
+        .box-header {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            height: 20px;
+            width: 100%;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sequence-box {
+                justify-content: flex-start;
+                padding-bottom: 10px;
+            }
+            .drop-zone {
+                width: 130px;
+                height: 130px;
+            }
+            .image-item {
+                width: 120px;
+                height: 120px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .instructions p {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Make sure elements don't shrink too much on very small screens */
+        @media (max-width: 400px) {
+            .drop-zone {
+                min-width: 120px;
+                min-height: 120px;
+            }
+        }
+        
+        /* Selected image styling */
+        .image-item.selected {
+            border: 2px solid #e74c3c;
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
+        }
+        
+        .sequence-heading {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Born Haber Cycle Sequencing</h1>
+    
+    <div class="instructions">
+        <p>Arrange the chemistry images in the correct sequence by dragging them into the boxes below. Click on two images to swap them, or click an image and then click on "Available Images" to return it. Click "Mark Answer" when you're done to check your sequence.</p>
+    </div>
+    
+    <div class="container">
+        <h3 class="source-heading">Available Images</h3>
+        <div class="image-source" id="image-source">
+            <div class="image-item" draggable="true" data-image="Gaseous anions.png" data-name="Gaseous anions">
+                <img src="Gaseous anions.png" alt="Gaseous Anions">
+            </div>
+            <div class="image-item" draggable="true" data-image="Gaseous cations.png" data-name="Gaseous cations">
+                <img src="Gaseous cations.png" alt="Gaseous cations">
+            </div>
+            <div class="image-item" draggable="true" data-image="Gaseous metal atoms.png" data-name="Gaseous metal atoms">
+                <img src="Gaseous metal atoms.png" alt="Gaseous metal atoms">
+            </div>
+            <div class="image-item" draggable="true" data-image="Gaseous non-metal atoms.png" data-name="Gaseous non-metal atoms">
+                <img src="Gaseous non-metal atoms.png" alt="Gaseous non-metal atoms">
+            </div>
+            <div class="image-item" draggable="true" data-image="Ionic compound.png" data-name="Ionic compound">
+                <img src="Ionic compound.png" alt="Ionic compound">
+            </div>
+            <div class="image-item" draggable="true" data-image="Elements.png" data-name="Elements">
+                <img src="Elements.png" alt="Elements">
+            </div>
+        </div>
+        
+        <div id="feedback"></div>
+        
+        <h3 class="sequence-heading">Arrange in Correct Sequence</h3>
+        <div class="sequence-area">
+            <div class="sequence-box" id="sequence-box">
+                <div class="drop-zone-container">
+                    <div class="box-header">Elements</div>
+                    <div class="drop-zone" data-position="1"></div>
+                </div>
+                
+                <div class="connector-arrow">→</div>
+                
+                <div class="drop-zone-container">
+                    <div class="box-header">Step 2</div>
+                    <div class="drop-zone" data-position="2"></div>
+                </div>
+                
+                <div class="connector-arrow">→</div>
+                
+                <div class="drop-zone-container">
+                    <div class="box-header">Step 3</div>
+                    <div class="drop-zone" data-position="3"></div>
+                </div>
+                
+                <div class="connector-arrow">→</div>
+                
+                <div class="drop-zone-container">
+                    <div class="box-header">Step 4</div>
+                    <div class="drop-zone" data-position="4"></div>
+                </div>
+                
+                <div class="connector-arrow">→</div>
+                
+                <div class="drop-zone-container">
+                    <div class="box-header">Step 5</div>
+                    <div class="drop-zone" data-position="5"></div>
+                </div>
+                
+                <div class="connector-arrow">→</div>
+                
+                <div class="drop-zone-container">
+                    <div class="box-header">Ionic Compound</div>
+                    <div class="drop-zone" data-position="6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="button-container">
+        <button id="check-btn">Mark Answer</button>
+        <button id="reset-btn">Reset</button>
+    </div>
+    
+    <script>
+        // Store the current sequence as the images are arranged
+        let currentSequence = [null, null, null, null, null, null];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageItems = document.querySelectorAll('.image-item');
+            const dropZones = document.querySelectorAll('.drop-zone');
+            const imageSource = document.getElementById('image-source');
+            const checkButton = document.getElementById('check-btn');
+            const resetButton = document.getElementById('reset-btn');
+            const feedbackDiv = document.getElementById('feedback');
+            let selectedItem = null;
+            let originalParent = null;
+            
+            // Set internal IDs for tracking purposes (not visible to users)
+            let imageId = 1;
+            imageItems.forEach(item => {
+                item.dataset.id = imageId++;
+            });
+            
+            // Set up drag and drop for the images
+            imageItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('click', handleImageClick);
+            });
+            
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+                zone.addEventListener('click', handleZoneClick);
+            });
+            
+            // Add click handler to the image source container to return selected images
+            imageSource.addEventListener('click', function(e) {
+                // Only act if clicking directly on the container (not on an image)
+                if (e.target === this && selectedItem) {
+                    // Return the selected item to the image source
+                    imageSource.appendChild(selectedItem);
+                    selectedItem.classList.remove('selected');
+                    
+                    // Update the sequence array (find and remove the image from its position)
+                    const imageId = selectedItem.dataset.id;
+                    const position = currentSequence.indexOf(imageId);
+                    if (position !== -1) {
+                        // Find and update the drop zone
+                        dropZones.forEach(zone => {
+                            if (parseInt(zone.dataset.position) === position + 1) {
+                                zone.classList.remove('filled');
+                            }
+                        });
+                        
+                        // Remove from sequence
+                        currentSequence[position] = null;
+                    }
+                    
+                    selectedItem = null;
+                }
+            });
+            
+            // Handle dragging start
+            function handleDragStart(e) {
+                originalParent = this.parentNode;
+                setTimeout(() => {
+                    this.style.display = 'none';
+                }, 0);
+                e.dataTransfer.setData('text/plain', this.dataset.id);
+            }
+            
+            // Handle drag over drop zone
+            function handleDragOver(e) {
+                e.preventDefault();
+                this.classList.add('active');
+            }
+            
+            // Handle drag leaving drop zone
+            function handleDragLeave() {
+                this.classList.remove('active');
+            }
+            
+            // Handle dropping the image
+            function handleDrop(e) {
+                e.preventDefault();
+                this.classList.remove('active');
+                const draggedItemId = e.dataTransfer.getData('text/plain');
+                const draggedItem = document.querySelector(`[data-id="${draggedItemId}"]`);
+                
+                // If the drop zone already has an image, swap them
+                const existingImage = this.querySelector('.image-item');
+                if (existingImage) {
+                    // Swap the items
+                    originalParent.appendChild(existingImage);
+                    existingImage.style.display = 'block';
+                    
+                    // If the original parent was a drop zone, update the sequence
+                    if (originalParent.classList.contains('drop-zone')) {
+                        const originalPosition = parseInt(originalParent.dataset.position) - 1;
+                        currentSequence[originalPosition] = existingImage.dataset.id;
+                    }
+                }
+                
+                // Add the dragged item to this drop zone
+                this.appendChild(draggedItem);
+                draggedItem.style.display = 'block';
+                this.classList.add('filled');
+                
+                // Update the sequence array
+                const position = parseInt(this.dataset.position) - 1;
+                currentSequence[position] = draggedItem.dataset.id;
+            }
+            
+            // Click to select an image
+            function handleImageClick(e) {
+                // If this is a second click on the same item, deselect it
+                if (selectedItem === this) {
+                    selectedItem.classList.remove('selected');
+                    selectedItem = null;
+                    return;
+                }
+                
+                // If there's already a selected item, handle swapping
+                if (selectedItem) {
+                    const firstItem = selectedItem;
+                    const secondItem = this;
+                    
+                    // Get the parent elements
+                    const firstParent = firstItem.parentNode;
+                    const secondParent = secondItem.parentNode;
+                    
+                    // Remove selection styling
+                    firstItem.classList.remove('selected');
+                    
+                    // If both parents are drop zones, swap the items and update sequence
+                    if (firstParent.classList.contains('drop-zone') && secondParent.classList.contains('drop-zone')) {
+                        // Swap the items
+                        secondParent.appendChild(firstItem);
+                        firstParent.appendChild(secondItem);
+                        
+                        // Update the sequence array
+                        const firstPosition = parseInt(firstParent.dataset.position) - 1;
+                        const secondPosition = parseInt(secondParent.dataset.position) - 1;
+                        
+                        currentSequence[firstPosition] = secondItem.dataset.id;
+                        currentSequence[secondPosition] = firstItem.dataset.id;
+                    } 
+                    // If only the first item is in a drop zone, move it to image source and second to drop zone
+                    else if (firstParent.classList.contains('drop-zone') && secondParent === imageSource) {
+                        // Move first item to image source
+                        imageSource.appendChild(firstItem);
+                        
+                        // Move second item to the drop zone
+                        firstParent.appendChild(secondItem);
+                        firstParent.classList.add('filled');
+                        
+                        // Update the sequence array
+                        const dropPosition = parseInt(firstParent.dataset.position) - 1;
+                        currentSequence[dropPosition] = secondItem.dataset.id;
+                    }
+                    // If only the second item is in a drop zone, move it to image source and first to drop zone
+                    else if (secondParent.classList.contains('drop-zone') && firstParent === imageSource) {
+                        // Move second item to image source
+                        imageSource.appendChild(secondItem);
+                        
+                        // Move first item to the drop zone
+                        secondParent.appendChild(firstItem);
+                        secondParent.classList.add('filled');
+                        
+                        // Update the sequence array
+                        const dropPosition = parseInt(secondParent.dataset.position) - 1;
+                        currentSequence[dropPosition] = firstItem.dataset.id;
+                    }
+                    
+                    selectedItem = null;
+                    return;
+                }
+                
+                // Select this item
+                selectedItem = this;
+                this.classList.add('selected');
+            }
+            
+            // Click on a drop zone to place the selected image
+            function handleZoneClick(e) {
+                // Only respond to clicks directly on the zone, not on contained images
+                if (e.target !== this) return;
+                
+                if (!selectedItem) return;
+                
+                // If the zone already contains an image, swap them
+                const existingImage = this.querySelector('.image-item');
+                if (existingImage) {
+                    // Get the parent of the selected item
+                    const selectedParent = selectedItem.parentNode;
+                    
+                    // If the selected item is from a drop zone, update that position in the sequence
+                    if (selectedParent.classList.contains('drop-zone')) {
+                        const selectedPosition = parseInt(selectedParent.dataset.position) - 1;
+                        
+                        // Move existing image to the selected item's former position
+                        selectedParent.appendChild(existingImage);
+                        
+                        // Update sequence for the original position
+                        currentSequence[selectedPosition] = existingImage.dataset.id;
+                    } else {
+                        // Just move the existing image to the source
+                        imageSource.appendChild(existingImage);
+                    }
+                }
+                
+                // Place the selected image in this zone
+                this.appendChild(selectedItem);
+                this.classList.add('filled');
+                selectedItem.classList.remove('selected');
+                
+                // Update the sequence array for the new position
+                const position = parseInt(this.dataset.position) - 1;
+                currentSequence[position] = selectedItem.dataset.id;
+                
+                selectedItem = null;
+            }
+            
+            // Check the answer when the button is clicked
+            checkButton.addEventListener('click', function() {
+                // Check if all positions are filled
+                if (currentSequence.includes(null)) {
+                    showFeedback("Please fill all positions in the sequence.", false);
+                    return;
+                }
+                
+                // Get all the images in the sequence
+                const sequenceImages = [];
+                for (let i = 0; i < currentSequence.length; i++) {
+                    const imageId = currentSequence[i];
+                    const image = document.querySelector(`[data-id="${imageId}"]`);
+                    sequenceImages.push(image);
+                }
+                
+                // Check the sequence according to our rules
+                let isCorrect = true;
+                let feedback = "";
+                
+                // Check if Elements is at the start
+                if (sequenceImages[0].dataset.name !== "Elements") {
+                    isCorrect = false;
+                    feedback = "Elements should be at the start of the sequence as this is the initial state in the Born-Haber cycle.";
+                }
+                // Check if Ionic compound is at the end
+                else if (sequenceImages[5].dataset.name !== "Ionic compound") {
+                    isCorrect = false;
+                    feedback = "Ionic compound should be at the end of the sequence as this is the final product of the Born-Haber cycle.";
+                }
+                // Check if at least one gaseous atom (metal or non-metal) is in positions 1 or 2
+                else if (!(
+                    sequenceImages[1].dataset.name === "Gaseous metal atoms" || 
+                    sequenceImages[1].dataset.name === "Gaseous non-metal atoms" ||
+                    sequenceImages[2].dataset.name === "Gaseous metal atoms" || 
+                    sequenceImages[2].dataset.name === "Gaseous non-metal atoms"
+                )) {
+                    isCorrect = false;
+                    feedback = "Gaseous atoms (either metal or non-metal) must come before the formation of ions. The atoms need to be in the gaseous state before ionization.";
+                }
+                // Check if both gaseous atoms are present
+                else if (!(
+                    (sequenceImages[1].dataset.name === "Gaseous metal atoms" && 
+                     sequenceImages[2].dataset.name === "Gaseous non-metal atoms") ||
+                    (sequenceImages[1].dataset.name === "Gaseous non-metal atoms" && 
+                     sequenceImages[2].dataset.name === "Gaseous metal atoms")
+                )) {
+                    isCorrect = false;
+                    feedback = "Both gaseous metal atoms and gaseous non-metal atoms must be included in the sequence at positions 2 and 3.";
+                }
+                // Check if cations form before anions
+                else if (
+                    sequenceImages[3].dataset.name !== "Gaseous cations" || 
+                    sequenceImages[4].dataset.name !== "Gaseous anions"
+                ) {
+                    isCorrect = false;
+                    feedback = "Cations must form before anions. Electrons must be produced first by the metal atoms before they can be accepted by the non-metal atoms.";
+                }
+                
+                // Display appropriate feedback
+                if (isCorrect) {
+                    showFeedback("Congratulations! Your sequence is correct.", true);
+                } else {
+                    showFeedback(feedback, false);
+                }
+            });
+            
+            // Reset the sequence
+            resetButton.addEventListener('click', function() {
+                // Move all images back to the source
+                dropZones.forEach(zone => {
+                    const image = zone.querySelector('.image-item');
+                    if (image) {
+                        imageSource.appendChild(image);
+                        zone.classList.remove('filled');
+                    }
+                });
+                
+                // Reset the sequence array
+                currentSequence = [null, null, null, null, null, null];
+                
+                // Deselect any selected item
+                if (selectedItem) {
+                    selectedItem.classList.remove('selected');
+                    selectedItem = null;
+                }
+                
+                // Hide feedback
+                feedbackDiv.style.display = 'none';
+            });
+            
+            // Display feedback to the user
+            function showFeedback(message, isSuccess) {
+                feedbackDiv.textContent = message;
+                feedbackDiv.style.display = 'block';
+                
+                if (isSuccess) {
+                    feedbackDiv.className = 'success';
+                } else {
+                    feedbackDiv.className = 'error';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

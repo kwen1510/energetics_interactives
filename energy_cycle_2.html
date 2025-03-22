@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Energy Cycle - Interactive Diagram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #container {
+            width: 800px;
+            height: 500px;
+            background-color: white;
+            border: 1px solid #ddd;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+            text-align: center;
+        }
+        .circle:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .circle.selected {
+            background-color: #2980b9;
+            box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .circle.correct-merged {
+            box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.5);
+            animation: green-pulse 2s infinite;
+        }
+        .circle.wrong-merged {
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.5);
+            animation: red-pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.3); }
+            50% { box-shadow: 0 0 20px 8px rgba(255, 255, 0, 0.6); }
+            100% { box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.3); }
+        }
+        @keyframes green-pulse {
+            0% { box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.3); }
+            50% { box-shadow: 0 0 20px 8px rgba(0, 255, 0, 0.6); }
+            100% { box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.3); }
+        }
+        @keyframes red-pulse {
+            0% { box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.3); }
+            50% { box-shadow: 0 0 20px 8px rgba(255, 0, 0, 0.6); }
+            100% { box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.3); }
+        }
+        @keyframes snap {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            75% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        @keyframes unsnap {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #instructions {
+            margin: 20px auto;
+            width: 800px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #status {
+            margin: 20px auto;
+            width: 800px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border: 1px solid #bedcf3;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+        svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .arrow {
+            marker-end: url(#arrowhead);
+        }
+        button {
+            margin: 10px auto;
+            display: block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .tip {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+        sub {
+            vertical-align: sub;
+            font-size: smaller;
+        }
+        sup {
+            vertical-align: super;
+            font-size: smaller;
+        }
+        /* Add responsive styles for mobile */
+        @media (max-width: 850px) {
+            #container, #instructions, #status {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        <h2>Chemical Energy Cycle - Interactive Diagram</h2>
+        <p>Connect compounds by either:</p>
+        <ul>
+            <li><strong>Drag and Drop:</strong> Drag circles to move them. When identical compounds overlap, they'll snap together.</li>
+            <li><strong>Click to Connect:</strong> Click one compound, then click another to attempt to connect them.</li>
+        </ul>
+        <p>Three distinct chemical reactions in three rows:</p>
+        <ul>
+            <li>Row 1: Na⁺ (g) + Cl⁻ (g) → NaCl(s)</li>
+            <li>Row 2: Na⁺ (g) + Cl⁻ (g) → Na⁺ (aq) + Cl⁻ (aq)</li>
+            <li>Row 3: NaCl(s) → Na⁺ (aq) + Cl⁻ (aq)</li>
+        </ul>
+        <div class="tip">Tip: On mobile devices, the click method works better!</div>
+    </div>
+    
+    <div id="status" style="display: none;"></div>
+    <button id="reset-btn">Reset Diagram</button>
+    
+    <div id="container">
+        <svg id="svg-container">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                        refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+    <script>
+        // Initial node definitions - three distinct rows
+        const initialNodes = [
+            // Row 1: Na⁺ (g) + Cl⁻ (g) → NaCl(s)
+            { id: "A1", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 200, y: 100 },
+            { id: "C1", label: "NaCl(s)", x: 500, y: 100 },
+            
+            // Row 2: Na⁺ (g) + Cl⁻ (g) → Na⁺ (aq) + Cl⁻ (aq)
+            { id: "A2", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 200, y: 250 },
+            { id: "B1", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 500, y: 250 },
+            
+            // Row 3: NaCl(s) → Na⁺ (aq) + Cl⁻ (aq)
+            { id: "C2", label: "NaCl(s)", x: 200, y: 400 },
+            { id: "B2", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 500, y: 400 }
+        ];
+
+        // Initial connections
+        const initialConnections = [
+            { from: "A1", to: "C1" },  // Na⁺ (g) + Cl⁻ (g) → NaCl(s) (row 1)
+            { from: "A2", to: "B1" },  // Na⁺ (g) + Cl⁻ (g) → Na⁺ (aq) + Cl⁻ (aq) (row 2)
+            { from: "C2", to: "B2" }   // NaCl(s) → Na⁺ (aq) + Cl⁻ (aq) (row 3)
+        ];
+
+        // Track current state
+        let nodes = JSON.parse(JSON.stringify(initialNodes));
+        let connections = JSON.parse(JSON.stringify(initialConnections));
+        let mergedNodes = {};
+        let selectedNodeId = null;
+        
+        // For tracking drag operations
+        let draggedElement = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let lastMousePositions = {};
+        let mouseVelocity = { x: 0, y: 0 };
+        const dragThreshold = 5; // Pixels to move before considering it a drag vs a click
+
+        // Circle elements
+        const circles = {};
+        
+        // Function to create circles
+        function createCircles() {
+            const container = document.getElementById('container');
+            
+            // Clear any existing circles
+            document.querySelectorAll('.circle').forEach(el => el.remove());
+            
+            nodes.forEach(node => {
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                circle.id = `circle-${node.id}`;
+                circle.innerHTML = node.label;
+                circle.style.left = `${node.x - 50}px`;
+                circle.style.top = `${node.y - 50}px`;
+                
+                // Add mouse and touch event listeners
+                circle.addEventListener('mousedown', handleMouseDown);
+                circle.addEventListener('touchstart', handleTouchStart, { passive: false });
+                circle.addEventListener('click', handleCircleClick);
+                
+                container.appendChild(circle);
+                circles[node.id] = circle;
+            });
+        }
+
+        // Mouse event handlers
+        function handleMouseDown(e) {
+            if (e.button !== 0) return; // Only handle left mouse button
+            startDrag(this, e.clientX, e.clientY);
+            e.preventDefault();
+        }
+        
+        function handleMouseMove(e) {
+            drag(e.clientX, e.clientY);
+        }
+        
+        function handleMouseUp() {
+            endDrag();
+        }
+
+        // Touch event handlers
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            startDrag(this, touch.clientX, touch.clientY);
+            e.preventDefault();
+        }
+        
+        function handleTouchMove(e) {
+            const touch = e.touches[0];
+            drag(touch.clientX, touch.clientY);
+            e.preventDefault();
+        }
+        
+        function handleTouchEnd() {
+            endDrag();
+        }
+
+        // Start dragging a circle
+        function startDrag(element, clientX, clientY) {
+            draggedElement = element;
+            isDragging = false; // Will be set to true after passing threshold
+            
+            // Calculate offset
+            const rect = element.getBoundingClientRect();
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+            
+            // Initialize position tracking
+            const id = element.id.replace('circle-', '');
+            lastMousePositions[id] = { 
+                x: clientX, 
+                y: clientY, 
+                time: Date.now(),
+                startX: clientX,
+                startY: clientY
+            };
+            
+            // Add event listeners
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        // Handle dragging
+        function drag(clientX, clientY) {
+            if (!draggedElement) return;
+            
+            // Get the ID of the dragged node
+            const id = draggedElement.id.replace('circle-', '');
+            const startPos = lastMousePositions[id];
+            
+            // Check if we've moved enough to consider this a drag
+            if (!isDragging) {
+                const dx = clientX - startPos.startX;
+                const dy = clientY - startPos.startY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > dragThreshold) {
+                    isDragging = true;
+                } else {
+                    return; // Not dragging yet
+                }
+            }
+            
+            // Calculate mouse velocity for potential separation
+            const currentTime = Date.now();
+            if (startPos) {
+                const timeDiff = currentTime - startPos.time;
+                if (timeDiff > 0) {
+                    mouseVelocity.x = (clientX - startPos.x) / timeDiff;
+                    mouseVelocity.y = (clientY - startPos.y) / timeDiff;
+                }
+            }
+            
+            // Update last position
+            lastMousePositions[id] = { 
+                x: clientX, 
+                y: clientY, 
+                time: currentTime,
+                startX: startPos.startX,
+                startY: startPos.startY
+            };
+            
+            // Calculate new position
+            const container = document.getElementById('container');
+            const containerRect = container.getBoundingClientRect();
+            
+            let newX = clientX - containerRect.left - offsetX;
+            let newY = clientY - containerRect.top - offsetY;
+            
+            // Ensure circle stays within container
+            newX = Math.max(0, Math.min(containerRect.width - 100, newX));
+            newY = Math.max(0, Math.min(containerRect.height - 100, newY));
+            
+            // Update element position
+            draggedElement.style.left = `${newX}px`;
+            draggedElement.style.top = `${newY}px`;
+            
+            // Update data position
+            const nodeIndex = nodes.findIndex(node => node.id === id);
+            if (nodeIndex !== -1) {
+                nodes[nodeIndex].x = newX + 50;
+                nodes[nodeIndex].y = newY + 50;
+            }
+            
+            // Handle merged nodes
+            handleMergedNodeDrag(id, nodeIndex);
+            
+            // Update arrows and magnetic effects
+            updateArrows();
+            checkMagneticHover();
+        }
+
+        // Handle dragging of merged nodes
+        function handleMergedNodeDrag(id, nodeIndex) {
+            const mergedWithId = mergedNodes[id];
+            if (!mergedWithId) return;
+            
+            // Check if this is a correct merge
+            const currentNode = nodes.find(node => node.id === id);
+            const mergedWithNode = nodes.find(node => node.id === mergedWithId);
+            const isCorrectMerge = currentNode && mergedWithNode && 
+                                  currentNode.label === mergedWithNode.label;
+            
+            if (isCorrectMerge) {
+                // Correctly merged nodes stay together
+                const mergedNode = nodes.find(node => node.id === mergedWithId);
+                if (mergedNode) {
+                    mergedNode.x = nodes[nodeIndex].x;
+                    mergedNode.y = nodes[nodeIndex].y;
+                    
+                    // Update visual position
+                    const mergedElement = circles[mergedWithId];
+                    mergedElement.style.left = `${mergedNode.x - 50}px`;
+                    mergedElement.style.top = `${mergedNode.y - 50}px`;
+                }
+            } else {
+                // For incorrectly merged nodes, check velocity for separation
+                const velocityMagnitude = Math.sqrt(
+                    mouseVelocity.x * mouseVelocity.x + mouseVelocity.y * mouseVelocity.y
+                );
+                
+                if (velocityMagnitude > 0.4) {
+                    separateNodes(id, mergedWithId);
+                } else {
+                    // Keep wrong merge together with slight offset
+                    const mergedNode = nodes.find(node => node.id === mergedWithId);
+                    if (mergedNode) {
+                        mergedNode.x = nodes[nodeIndex].x;
+                        mergedNode.y = nodes[nodeIndex].y;
+                        
+                        const mergedElement = circles[mergedWithId];
+                        mergedElement.style.left = `${mergedNode.x - 50 + 5}px`;
+                        mergedElement.style.top = `${mergedNode.y - 50 + 5}px`;
+                    }
+                }
+            }
+        }
+
+        // End dragging and check for merges
+        function endDrag() {
+            if (!draggedElement) return;
+            
+            const draggedId = draggedElement.id.replace('circle-', '');
+            
+            // Only process as a drag if threshold was passed
+            if (isDragging) {
+                const draggedNode = nodes.find(node => node.id === draggedId);
+                
+                // Check for merges with other nodes
+                if (draggedNode && !mergedNodes[draggedId]) {
+                    let merged = false;
+                    
+                    nodes.forEach(node => {
+                        // Skip self or already merged nodes
+                        if (node.id === draggedId || mergedNodes[node.id]) return;
+                        
+                        const dx = node.x - draggedNode.x;
+                        const dy = node.y - draggedNode.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 100) { // Threshold for merging
+                            // Check if the nodes have the same label
+                            if (node.label === draggedNode.label) {
+                                mergeNodes(draggedId, node.id, true); // Correct merge
+                            } else {
+                                mergeNodes(draggedId, node.id, false); // Wrong merge
+                            }
+                            merged = true;
+                        }
+                    });
+                    
+                    // Apply snap animation if merged
+                    if (merged) {
+                        draggedElement.style.animation = "snap 0.5s forwards";
+                        setTimeout(() => {
+                            draggedElement.style.animation = "";
+                        }, 500);
+                    }
+                }
+            }
+            
+            // Clean up
+            draggedElement = null;
+            isDragging = false;
+            mouseVelocity = { x: 0, y: 0 };
+            
+            // Remove event listeners
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchend', handleTouchEnd);
+            
+            updateArrows();
+        }
+
+        // Click-to-Connect functionality
+        function handleCircleClick(e) {
+            // Skip if dragging occurred
+            if (isDragging) return;
+            
+            const clickedId = this.id.replace('circle-', '');
+            
+            // If we already have a selected node, try to merge
+            if (selectedNodeId !== null) {
+                // Skip if clicking the same node
+                if (selectedNodeId === clickedId) {
+                    circles[selectedNodeId].classList.remove('selected');
+                    selectedNodeId = null;
+                    return;
+                }
+                
+                // Try to merge the nodes
+                const selectedNode = nodes.find(node => node.id === selectedNodeId);
+                const clickedNode = nodes.find(node => node.id === clickedId);
+                
+                if (selectedNode && clickedNode) {
+                    // Check if either node is already merged
+                    if (!mergedNodes[selectedNodeId] && !mergedNodes[clickedId]) {
+                        // Check if the nodes have the same label
+                        if (selectedNode.label === clickedNode.label) {
+                            // Move the clicked node to the selected node's position
+                            clickedNode.x = selectedNode.x;
+                            clickedNode.y = selectedNode.y;
+                            
+                            // Update visual position
+                            circles[clickedId].style.left = `${clickedNode.x - 50}px`;
+                            circles[clickedId].style.top = `${clickedNode.y - 50}px`;
+                            
+                            // Merge the nodes
+                            mergeNodes(selectedNodeId, clickedId, true);
+                        } else {
+                            // For wrong matches, briefly join them, then separate
+                            const originalX = clickedNode.x;
+                            const originalY = clickedNode.y;
+                            
+                            // Move to selected node position
+                            clickedNode.x = selectedNode.x;
+                            clickedNode.y = selectedNode.y;
+                            
+                            circles[clickedId].style.left = `${clickedNode.x - 50}px`;
+                            circles[clickedId].style.top = `${clickedNode.y - 50}px`;
+                            
+                            // Temporary wrong merge
+                            mergeNodes(selectedNodeId, clickedId, false);
+                            
+                            // After a delay, separate and return to original position
+                            setTimeout(() => {
+                                separateNodes(selectedNodeId, clickedId);
+                                
+                                // Move back to original position
+                                clickedNode.x = originalX;
+                                clickedNode.y = originalY;
+                                
+                                circles[clickedId].style.left = `${clickedNode.x - 50}px`;
+                                circles[clickedId].style.top = `${clickedNode.y - 50}px`;
+                                
+                                updateArrows();
+                            }, 1000);
+                        }
+                    }
+                }
+                
+                // Deselect first node
+                circles[selectedNodeId].classList.remove('selected');
+                selectedNodeId = null;
+            } else {
+                // Skip if this node is already merged
+                if (mergedNodes[clickedId]) return;
+                
+                // Select this node
+                selectedNodeId = clickedId;
+                this.classList.add('selected');
+            }
+        }
+
+        // Function to separate previously merged nodes
+        function separateNodes(id1, id2) {
+            // Check if this is a correct merge - if so, don't allow separation
+            const node1 = nodes.find(node => node.id === id1);
+            const node2 = nodes.find(node => node.id === id2);
+            
+            if (node1 && node2 && node1.label === node2.label) {
+                return; // Don't separate correct matches
+            }
+            
+            // Remove merged status
+            delete mergedNodes[id1];
+            delete mergedNodes[id2];
+            
+            // Remove visual indicators
+            const element1 = circles[id1];
+            const element2 = circles[id2];
+            
+            if (element1) {
+                element1.classList.remove('wrong-merged');
+                element1.style.animation = "unsnap 0.3s forwards";
+                setTimeout(() => {
+                    element1.style.animation = "";
+                }, 300);
+            }
+            
+            if (element2) {
+                element2.classList.remove('wrong-merged');
+                element2.style.animation = "unsnap 0.3s forwards";
+                setTimeout(() => {
+                    element2.style.animation = "";
+                }, 300);
+            }
+        }
+
+        // Function to check for magnetic hover effect
+        function checkMagneticHover() {
+            if (!draggedElement) return;
+            
+            const draggedId = draggedElement.id.replace('circle-', '');
+            const draggedNode = nodes.find(node => node.id === draggedId);
+            
+            if (!draggedNode) return;
+            
+            // Remove existing hover effects (but keep merged effects)
+            document.querySelectorAll('.circle').forEach(el => {
+                const id = el.id.replace('circle-', '');
+                if (!mergedNodes[id] && !el.classList.contains('correct-merged') && !el.classList.contains('wrong-merged')) {
+                    el.style.boxShadow = "";
+                }
+            });
+            
+            // Skip if this node is already merged
+            if (mergedNodes[draggedId]) return;
+            
+            // Check each node for magnetic attraction
+            nodes.forEach(node => {
+                // Skip self or already merged nodes
+                if (node.id === draggedId || mergedNodes[node.id]) return;
+                
+                const dx = node.x - draggedNode.x;
+                const dy = node.y - draggedNode.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 140) { // Magnetic attraction range
+                    const otherElement = circles[node.id];
+                    const intensity = Math.max(0, 1 - distance / 140);
+                    const glowSize = 15 * intensity;
+                    
+                    // Add glow effect - green for same compound, red for different
+                    if (node.label === draggedNode.label) {
+                        // Green glow for same compound
+                        draggedElement.style.boxShadow = `0 0 ${glowSize}px ${glowSize/2}px rgba(0, 255, 0, ${intensity * 0.7})`;
+                        otherElement.style.boxShadow = `0 0 ${glowSize}px ${glowSize/2}px rgba(0, 255, 0, ${intensity * 0.7})`;
+                    } else {
+                        // Red glow for different compounds
+                        draggedElement.style.boxShadow = `0 0 ${glowSize}px ${glowSize/2}px rgba(255, 0, 0, ${intensity * 0.7})`;
+                        otherElement.style.boxShadow = `0 0 ${glowSize}px ${glowSize/2}px rgba(255, 0, 0, ${intensity * 0.7})`;
+                    }
+                }
+            });
+        }
+
+        // Function to merge two nodes
+        function mergeNodes(node1Id, node2Id, isCorrectMerge) {
+            // Find the nodes
+            const node1 = nodes.find(node => node.id === node1Id);
+            const node2 = nodes.find(node => node.id === node2Id);
+            
+            if (!node1 || !node2) return;
+            
+            const circle1 = circles[node1Id];
+            const circle2 = circles[node2Id];
+            
+            // Apply visual effects based on correct/wrong merge
+            if (isCorrectMerge) {
+                circle1.classList.add('correct-merged');
+                circle2.classList.add('correct-merged');
+            } else {
+                circle1.classList.add('wrong-merged');
+                circle2.classList.add('wrong-merged');
+            }
+            
+            // Mark as merged
+            mergedNodes[node1Id] = node2Id;
+            mergedNodes[node2Id] = node1Id;
+            
+            // Move node2 to node1's position
+            node2.x = node1.x;
+            node2.y = node1.y;
+            
+            // Update visual position
+            if (isCorrectMerge) {
+                // Perfectly aligned for correct matches
+                circle2.style.left = `${node2.x - 50}px`;
+                circle2.style.top = `${node2.y - 50}px`;
+            } else {
+                // Slightly offset for wrong matches
+                circle2.style.left = `${node2.x - 50 + 5}px`;
+                circle2.style.top = `${node2.y - 50 + 5}px`;
+            }
+            
+            // Update connections
+            updateArrows();
+        }
+
+        // Function to draw arrows between circles
+        function updateArrows() {
+            const svg = document.getElementById('svg-container');
+            
+            // Clear existing arrows
+            while (svg.lastChild) {
+                if (svg.lastChild.tagName !== 'defs') {
+                    svg.removeChild(svg.lastChild);
+                } else {
+                    break;
+                }
+            }
+            
+            // Draw connections
+            connections.forEach(conn => {
+                let fromId = conn.from;
+                let toId = conn.to;
+                
+                // Skip connections to/from removed nodes
+                if (!nodes.some(n => n.id === fromId) || !nodes.some(n => n.id === toId)) {
+                    return;
+                }
+                
+                const from = nodes.find(node => node.id === fromId);
+                const to = nodes.find(node => node.id === toId);
+                
+                if (!from || !to) return;
+                
+                // Calculate direction vector
+                const dx = to.x - from.x;
+                const dy = to.y - from.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                if (length === 0) return; // Skip if points are the same
+                
+                // Normalize and scale to circle radius
+                const radius = 50;
+                const nx = dx / length * radius;
+                const ny = dy / length * radius;
+                
+                // Calculate start and end points
+                const startX = from.x + nx;
+                const startY = from.y + ny;
+                const endX = to.x - nx;
+                const endY = to.y - ny;
+                
+                // Create arrow
+                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                arrow.setAttribute('x1', startX);
+                arrow.setAttribute('y1', startY);
+                arrow.setAttribute('x2', endX);
+                arrow.setAttribute('y2', endY);
+                arrow.setAttribute('stroke', '#333');
+                arrow.setAttribute('stroke-width', '2');
+                arrow.classList.add('arrow');
+                
+                svg.appendChild(arrow);
+            });
+        }
+
+        // Reset the diagram
+        function resetDiagram() {
+            nodes = JSON.parse(JSON.stringify(initialNodes));
+            connections = JSON.parse(JSON.stringify(initialConnections));
+            mergedNodes = {};
+            selectedNodeId = null;
+            
+            createCircles();
+            updateArrows();
+            
+            const status = document.getElementById('status');
+            status.style.display = 'none';
+        }
+
+        // Check if we're on a touch device
+        function isTouchDevice() {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        }
+
+        // Initialize the app
+        function init() {
+            createCircles();
+            updateArrows();
+            
+            // Add reset button functionality
+            document.getElementById('reset-btn').addEventListener('click', resetDiagram);
+            
+            // Detect if we're on a touch device and show appropriate instructions
+            if (isTouchDevice()) {
+                document.querySelector('.tip').textContent = 'Tip: On this device, the click method will work better than drag and drop!';
+            }
+        }
+
+        // Start the app when the window loads
+        window.onload = init;
+    </script>
+</body>
+</html>
