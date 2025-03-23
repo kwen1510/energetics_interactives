@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chemical Energy Cycle - Interactive Diagram</title>
+  <title>Energy Cycle - Part 2</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -143,19 +143,17 @@
 </head>
 <body>
   <div id="instructions">
-    <h2>Chemical Energy Cycle - Interactive Diagram</h2>
-    <p>Connect compounds by either:</p>
-    <ul>
-      <li><strong>Drag and Drop:</strong> Drag circles to move them. When identical compounds overlap, they'll snap together.</li>
-      <li><strong>Click to Connect:</strong> Click one compound, then click another to attempt to connect them.</li>
-    </ul>
-    <p>Three distinct chemical reactions in three rows:</p>
-    <ul>
-      <li>Row 1: Na⁺ (g) + Cl⁻ (g) → NaCl(s)</li>
-      <li>Row 2: Na⁺ (g) + Cl⁻ (g) → Na⁺ (aq) + Cl⁻ (aq)</li>
-      <li>Row 3: NaCl(s) → Na⁺ (aq) + Cl⁻ (aq)</li>
-    </ul>
-    <div class="tip">Tip: On mobile devices, the click method works better!</div>
+    <h2>Energy Cycle - Part 2</h2>
+      <!-- <p>Connect nodes by either:</p>
+      <ul>
+          <li><strong>Drag and Drop:</strong> Drag circles to move them. When identical circles overlap, they'll snap together.</li>
+          <li><strong>Click to Connect:</strong> Click one circle, then click another to attempt to connect them.</li>
+      </ul> -->
+      <p>Connect the circles by dragging them to the correct positions. You should end up with a complete cycle</p>
+      <p>If your answer is correct, there will be a green glow around the circle.</p>
+      <!-- <p>Identical labels will connect with a green glow and become permanently joined.</p> -->
+      <!-- <p>Non-matching circles will show a red glow and can be separated.</p> -->
+      <!-- <div class="tip">Tip: On this device, the click method will work better than drag and drop!</div> -->
   </div>
   
   <div id="status" style="display: none;"></div>
@@ -396,11 +394,12 @@
               (percentToPxY(node.y) - percentToPxY(draggedNode.y))**2
             );
             // Merge threshold ~100 px
-            if (distPx < 100) {
+            if (distPx < 40) {
               if (node.label === draggedNode.label) {
                 mergeNodes(draggedId, node.id, true);
               } else {
-                mergeNodes(draggedId, node.id, false);
+                // mergeNodes(draggedId, node.id, false);
+                console.log("Wrong, don't merge")
               }
               merged = true;
             }
@@ -596,7 +595,7 @@
           (percentToPxX(node.x) - percentToPxX(draggedNode.x))**2 +
           (percentToPxY(node.y) - percentToPxY(draggedNode.y))**2
         );
-        if (distPx < 140) {
+        if (distPx < 100) {
           const otherEl = circles[node.id];
           const intensity = Math.max(0, 1 - distPx / 140);
           const glowSize = 15 * intensity;
