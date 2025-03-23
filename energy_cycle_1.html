@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Cycle - Drag and Connect</title>
+    <title>Energy Cycle - Part 1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -190,15 +190,17 @@
 </head>
 <body>
     <div id="instructions">
-        <h2>Energy Cycle - Interactive Diagram</h2>
-        <p>Connect nodes by either:</p>
+        <h2>Energy Cycle - Part 1</h2>
+        <!-- <p>Connect nodes by either:</p>
         <ul>
             <li><strong>Drag and Drop:</strong> Drag circles to move them. When identical circles overlap, they'll snap together.</li>
             <li><strong>Click to Connect:</strong> Click one circle, then click another to attempt to connect them.</li>
-        </ul>
-        <p>Identical labels (A-A, B-B, C-C) will connect with a green glow and become permanently joined.</p>
-        <p>Non-matching circles will show a red glow and can be separated.</p>
-        <div class="tip">Tip: On this device, the click method will work better than drag and drop!</div>
+        </ul> -->
+        <p>Connect the circles by dragging them to the correct positions. You should end up with a complete cycle</p>
+        <p>If your answer is correct, there will be a green glow around the circle.</p>
+        <!-- <p>Identical labels will connect with a green glow and become permanently joined.</p> -->
+        <!-- <p>Non-matching circles will show a red glow and can be separated.</p> -->
+        <!-- <div class="tip">Tip: On this device, the click method will work better than drag and drop!</div> -->
     </div>
     
     <div id="status" style="display: none;"></div>
@@ -578,12 +580,13 @@
                         const dy = node.y - draggedNode.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         
-                        if (distance < (circleRadius * 2)) { // Threshold for merging
+                        if (distance < (circleRadius * 1)) { // Threshold for merging
                             // Check if the nodes have the same label for correct merge
                             if (node.label === draggedNode.label) {
                                 mergeNodes(draggedId, node.id, true); // Correct merge
                             } else {
-                                mergeNodes(draggedId, node.id, false); // Wrong merge
+                                // mergeNodes(draggedId, node.id, false); // Wrong merge
+                                console.log("Error, don't merge")
                             }
                             merged = true;
                         }
@@ -925,10 +928,10 @@
             // Add reset button functionality
             document.getElementById('reset-btn').addEventListener('click', resetDiagram);
             
-            // Detect if we're on a touch device and show appropriate instructions
-            if (isTouchDevice()) {
-                document.querySelector('.tip').textContent = 'Tip: On this device, the click method will work better than drag and drop!';
-            }
+            // // Detect if we're on a touch device and show appropriate instructions
+            // if (isTouchDevice()) {
+            //     document.querySelector('.tip').textContent = 'Tip: On this device, the click method will work better than drag and drop!';
+            // }
             
             // Add resize event listener to handle responsiveness
             window.addEventListener('resize', debounce(function() {
