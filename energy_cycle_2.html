@@ -135,10 +135,23 @@
       margin-top: 5px;
     }
     @media (max-width: 850px) {
-      #container, #instructions, #status {
+      #instructions, #status {
         width: 95%;
       }
-    }
+                  #container {
+                height: 450px;
+            }
+    }  
+        @media (max-width: 600px) {
+            #container {
+                height: 400px;
+            }
+        }
+        @media (max-width: 400px) {
+            #container {
+                height: 350px;
+            }
+        }
   </style>
 </head>
 <body>
