@@ -11,9 +11,10 @@
             font-family: Arial, sans-serif;
             max-width: 100%;
             margin: 0 auto;
-            padding: 10px;
+            padding: 10px 15px;
             background-color: #f5f5f5;
             box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
         }
         h1 {
             color: #2c3e50;
@@ -36,9 +37,12 @@
         .container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 15px;
             width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .source-heading {
             margin-bottom: 10px;
@@ -57,13 +61,13 @@
         }
         .sequence-area {
             background-color: white;
-            padding: 15px;
+            padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
             overflow-x: auto;
             max-width: 100%;
-            min-height: 450px;
+            min-height: 360px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -100,10 +104,12 @@
             flex-direction: column;
             align-items: center;
             margin: 0 5px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .drop-zone {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border: 2px dashed #3498db;
             border-radius: 5px;
             display: flex;
@@ -112,6 +118,7 @@
             transition: all 0.3s ease;
             position: relative;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
         .drop-zone.active {
             background-color: #d4e6f1;
@@ -165,6 +172,9 @@
         .box-header {
             margin-bottom: 10px;
             font-weight: bold;
+            text-align: center;
+            width: 100%;
+            font-size: 14px;
         }
         
         /* Responsive adjustments */
@@ -337,17 +347,19 @@
         /* CSS changes for the grid layout */
         .flowchart-grid {
             display: grid;
-            grid-template-columns: minmax(140px, 150px) minmax(70px, 90px) minmax(140px, 150px) minmax(70px, 90px) minmax(140px, 150px) minmax(70px, 90px) minmax(140px, 150px);
-            grid-template-rows: minmax(160px, 180px) 40px minmax(160px, 180px);
+            grid-template-columns: minmax(120px, 130px) minmax(40px, 60px) minmax(120px, 130px) minmax(40px, 60px) minmax(120px, 130px) minmax(40px, 60px) minmax(120px, 130px);
+            grid-template-rows: minmax(120px, 140px) 30px minmax(120px, 140px);
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
             margin: 0 auto;
             max-width: 100%;
-            padding: 15px;
+            padding: 10px 15px;
             background: linear-gradient(to right, rgba(240, 240, 240, 0.3), rgba(230, 245, 255, 0.5), rgba(240, 240, 240, 0.3));
             border-radius: 15px;
             min-width: max-content;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .arrow {
@@ -424,21 +436,21 @@
             }
             
             .sequence-area {
-                padding: 10px;
-                min-height: 500px;
+                padding: 8px;
+                min-height: 350px;
             }
             
             .flowchart-grid {
-                grid-template-columns: 130px 70px 130px 70px 130px 70px 130px;
-                grid-template-rows: 150px 30px 150px;
+                grid-template-columns: 105px 40px 105px 40px 105px 40px 105px;
+                grid-template-rows: 130px 30px 130px;
                 min-width: max-content;
-                padding: 10px;
-                gap: 8px;
+                padding: 8px 12px;
+                gap: 3px;
             }
             
             .drop-zone {
-                width: 120px;
-                height: 120px;
+                width: 100px;
+                height: 100px;
             }
             
             .instructions {
@@ -446,50 +458,50 @@
             }
             
             h1 {
-                font-size: 1.4rem;
-                margin: 8px 0;
+                font-size: 1.3rem;
+                margin: 5px 0;
             }
         }
         
         /* When embedded in iframe */
         @media (max-height: 700px) {
             h1 {
-                font-size: 1.3rem;
-                margin: 5px 0;
+                font-size: 1.2rem;
+                margin: 3px 0;
             }
             
             .instructions {
-                padding: 8px;
-                margin-bottom: 10px;
+                padding: 6px;
+                margin-bottom: 8px;
             }
             
             .instructions p {
-                margin: 3px 0;
-                font-size: 0.85rem;
+                margin: 2px 0;
+                font-size: 0.8rem;
             }
             
             .sequence-area {
-                min-height: 420px;
+                min-height: 330px;
             }
             
             .flowchart-grid {
-                grid-template-rows: 140px 30px 140px;
-                padding: 8px;
+                grid-template-rows: 120px 25px 120px;
+                padding: 5px;
             }
             
             .drop-zone {
-                width: 120px;
-                height: 120px;
+                width: 100px;
+                height: 100px;
             }
             
             .button-container {
-                margin-top: 10px;
+                margin-top: 5px;
             }
             
             button {
-                padding: 8px 16px;
-                font-size: 14px;
-                margin: 0 5px 5px;
+                padding: 6px 12px;
+                font-size: 13px;
+                margin: 0 3px 3px;
             }
         }
         
@@ -555,6 +567,105 @@
             .box-header {
                 font-size: 12px;
             }
+        }
+        
+        /* Canvas LMS specific adjustments */
+        .canvas-lms-embedded {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Ensure the diagram fits within Canvas LMS iframe width */
+        @media (max-width: 850px) {
+            body {
+                padding: 5px 10px;
+            }
+            
+            h1 {
+                font-size: 1.1rem;
+                margin: 2px 0;
+            }
+            
+            .instructions {
+                padding: 5px;
+                margin-bottom: 5px;
+            }
+            
+            .instructions p {
+                font-size: 0.75rem;
+                margin: 2px 0;
+            }
+            
+            .container {
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .sequence-area {
+                padding: 5px;
+                margin: 0 -5px;
+                width: calc(100% + 10px);
+                min-height: 320px;
+            }
+            
+            .flowchart-grid {
+                width: 100%;
+                min-width: 630px;
+                overflow-x: visible;
+                grid-template-columns: 90px 35px 90px 35px 90px 35px 90px;
+                grid-template-rows: 110px 30px 110px;
+                padding: 5px 10px;
+            }
+            
+            .drop-zone {
+                width: 85px;
+                height: 85px;
+                border-width: 1px;
+            }
+            
+            .box-header {
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
+            
+            .button-container {
+                margin-top: 3px;
+            }
+            
+            button {
+                padding: 5px 10px;
+                font-size: 12px;
+                margin: 0 2px 2px;
+            }
+            
+            /* Center the diagram in the iframe */
+            .sequence-area, .flowchart-grid {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+        
+        /* Right-side Ionic Compound adjustments */
+        .drop-zone-container[style*="grid-column: 8"] {
+            margin-right: 0;
+            padding-right: 0;
+            max-width: 120px;
+        }
+        
+        /* Make sure grid container has enough width */
+        .sequence-area {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-x: auto;
+            max-width: 100%;
+            min-height: 360px;
+            width: 100%;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -662,7 +773,7 @@
                 
                 <!-- Ionic compound (right column, spans both rows, adjusted) -->
                 <div class="drop-zone-container" style="grid-column: 8; grid-row: 1 / span 3; align-self: center;">
-                    <div class="box-header">Ionic Compound</div>
+                    <div class="box-header">Ionic<br>Compound</div>
                     <div class="drop-zone" data-position="6"></div>
                 </div>
             </div>
