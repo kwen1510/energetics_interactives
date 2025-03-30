@@ -21,6 +21,17 @@
       border: 1px solid #ddd;
       background-color: white;
       overflow: hidden;
+      min-height: 400px; /* Ensure minimum height on all screens */
+    }
+    
+    /* Make container fill available space inside iframes */
+    @media screen and (max-width: 800px) {
+      #container {
+        min-height: 500px;
+        height: 70vh; /* Use viewport height for better scaling in iframes */
+        max-height: 800px;
+        aspect-ratio: auto; /* Let height be determined by min-height/vh */
+      }
     }
     .circle {
       /* Let circles shrink on narrow screens, but never bigger than 100px */
@@ -89,21 +100,25 @@
     }
     #instructions {
       margin: 20px auto;
-      width: 800px;
+      width: 100%;
+      max-width: 800px;
       padding: 15px;
       background-color: #f8f9fa;
       border: 1px solid #ddd;
       border-radius: 5px;
+      box-sizing: border-box;
     }
     #status {
       margin: 20px auto;
-      width: 800px;
+      width: 100%;
+      max-width: 800px;
       padding: 10px;
       background-color: #e8f4fd;
       border: 1px solid #bedcf3;
       border-radius: 5px;
       display: none;
       font-weight: bold;
+      box-sizing: border-box;
     }
     svg {
       position: absolute;
@@ -135,8 +150,32 @@
       margin-top: 5px;
     }
     @media (max-width: 850px) {
-      #container, #instructions, #status {
-        width: 95%;
+      body {
+        padding: 10px;
+      }
+      
+      #container {
+        min-height: 500px;
+      }
+      
+      .circle {
+        width: clamp(70px, 20vw, 100px);
+        height: clamp(70px, 20vw, 100px);
+        font-size: clamp(11px, 2.2vw, 14px);
+      }
+    }
+    
+    @media (max-width: 500px) {
+      #container {
+        min-height: 450px;
+        height: 80vh;
+      }
+      
+      .circle {
+        width: clamp(60px, 18vw, 80px);
+        height: clamp(60px, 18vw, 80px);
+        font-size: clamp(10px, 2vw, 12px);
+        padding: 4px;
       }
     }
   </style>
@@ -149,7 +188,7 @@
           <li><strong>Drag and Drop:</strong> Drag circles to move them. When identical circles overlap, they'll snap together.</li>
           <li><strong>Click to Connect:</strong> Click one circle, then click another to attempt to connect them.</li>
       </ul> -->
-      <p>Connect the circles by dragging them to the correct positions. You should end up with a complete cycle.</p>
+      <p>Connect the circles by dragging them to the correct positions. You should end up with a complete cycle</p>
       <p>If your answer is correct, there will be a green glow around the circle.</p>
       <!-- <p>Identical labels will connect with a green glow and become permanently joined.</p> -->
       <!-- <p>Non-matching circles will show a red glow and can be separated.</p> -->
@@ -176,16 +215,16 @@
     // --------------------------------------------
     const initialNodes = [
       // Row 1 at y=20%
-      { id: "A1", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 25, y: 20 },
-      { id: "C1", label: "NaCl(s)", x: 75, y: 20 },
+      { id: "A1", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 20, y: 15 },
+      { id: "C1", label: "NaCl(s)", x: 80, y: 15 },
 
       // Row 2 at y=50%
-      { id: "A2", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 25, y: 50 },
-      { id: "B1", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 75, y: 50 },
+      { id: "A2", label: "Na⁺ (g) +<br>Cl⁻ (g)", x: 20, y: 50 },
+      { id: "B1", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 80, y: 50 },
 
       // Row 3 at y=80%
-      { id: "C2", label: "NaCl(s)", x: 25, y: 80 },
-      { id: "B2", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 75, y: 80 }
+      { id: "C2", label: "NaCl(s)", x: 20, y: 85 },
+      { id: "B2", label: "Na⁺ (aq) +<br>Cl⁻ (aq)", x: 80, y: 85 }
     ];
 
     // Connections
@@ -352,11 +391,11 @@
       let newPxX = clientX - containerRect.left - offsetX;
       let newPxY = clientY - containerRect.top - offsetY;
 
-      // Bound in container (subtract circle diameter so we can’t drag out)
+      // Bound in container (subtract circle diameter so we can't drag out)
       newPxX = Math.max(0, Math.min(containerRect.width - circleWidth, newPxX));
       newPxY = Math.max(0, Math.min(containerRect.height - circleWidth, newPxY));
 
-      // Update circle’s pixel position
+      // Update circle's pixel position
       draggedElement.style.left = newPxX + "px";
       draggedElement.style.top  = newPxY + "px";
 
@@ -476,7 +515,7 @@
       }
     }
 
-    // Helper to (re)position a circle by node’s % coords
+    // Helper to (re)position a circle by node's % coords
     function positionCircle(nodeId) {
       const node = nodes.find(n => n.id === nodeId);
       const circle = circles[nodeId];
@@ -546,7 +585,7 @@
     function separateNodes(id1, id2) {
       const node1 = nodes.find(n => n.id === id1);
       const node2 = nodes.find(n => n.id === id2);
-      // Don’t separate if they are correct
+      // Don't separate if they are correct
       if (node1 && node2 && node1.label === node2.label) return;
 
       delete mergedNodes[id1];
