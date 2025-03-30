@@ -94,6 +94,13 @@
             height: 100%;
         }
         
+        .tooltip-container {
+            width: 100%;
+            max-width: 600px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+        }
+        
         .tooltip {
             position: relative;
             padding: 10px;
@@ -101,11 +108,16 @@
             color: white;
             font-size: 20px;
             text-align: center;
-            margin: 0 auto 20px auto;
-            max-width: 600px;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             opacity: 1;
             transition: background-color 0.3s;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         
         .tooltip.correct {
@@ -212,6 +224,14 @@
             button {
                 padding: 8px 16px;
             }
+            
+            .tooltip-container {
+                height: 100px;
+            }
+            
+            .tooltip {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -223,9 +243,12 @@
     <div class="instructions">
         <h2>Instructions</h2>
         <p>This Born-Haber cycle diagram contains 5 mistakes. Click on the areas of the diagram where you think there are errors. Try to find all mistakes!</p>
+        <p>You can click on previously found mistakes to see their explanations again.</p>
     </div>
     
-    <div class="tooltip" id="tooltip">Click on the diagram to identify mistakes in the Born-Haber cycle.</div>
+    <div class="tooltip-container">
+        <div class="tooltip" id="tooltip">Click on the diagram to identify mistakes in the Born-Haber cycle. Click again on found mistakes to review their explanations.</div>
+    </div>
     
     <div class="game-container">
         <div class="image-container">
@@ -261,29 +284,29 @@
             const hotspots = [
                 {
                     id: 1,
-                    area: { top: 30, left: 18, width: 27, height: 15 },
+                    area: { top: 30, left: 20.5, width: 27, height: 15 },
                     message: "There are electrons missing here. Electrons should be produced from IE."
                 },
                 {
                     id: 2,
-                    area: { top: 37.5, left: 47.5, width: 10, height: 8 },
+                    area: { top: 37.5, left: 48.5, width: 10, height: 8 },
                     message: "First EA should be exothermic."
                 },
                 {
                     id: 3,
-                    area: { top: 46.5, left: 47.5, width: 20, height: 12 },
+                    area: { top: 46.5, left: 48.5, width: 20, height: 12 },
                     message: "This should be first IE + second IE. There are cases where you will use 2 x first IE (e.g. Na in sodium oxide)."
                 },
                 {
                     id: 4,
-                    area: { top: 60, left: 47.5, width: 20, height: 8 },
+                    area: { top: 60, left: 48.5, width: 20, height: 8 },
                     message: "BE for oxygen gas gives you two oxygen atoms. In fact this should be half BE."
                 },
                 {
                     id: 5,
-                    area: { top: 70, left: 0.5, width: 11, height: 10 },
+                    area: { top: 70, left: 3, width: 11, height: 10 },
                     message: "There should be a zero here for Born-Haber cycles"
-                }
+                },
             ];
             
             const imageContainer = document.querySelector('.image-container');
@@ -335,6 +358,10 @@
                         
                         // Prevent propagation to avoid diagram click event
                         e.stopPropagation();
+                    } else {
+                        // If hotspot was already found, show its message again
+                        showTooltip(hotspot.message, true);
+                        e.stopPropagation();
                     }
                 });
             });
@@ -365,8 +392,7 @@
                         x >= area.left && 
                         x <= area.left + area.width && 
                         y >= area.top && 
-                        y <= area.top + area.height &&
-                        !foundHotspots.includes(hotspot.id)
+                        y <= area.top + area.height
                     ) {
                         clickedHotspot = hotspot;
                         break;
@@ -375,19 +401,16 @@
                 
                 if (clickedHotspot) {
                     const hotspotEl = document.getElementById(`hotspot-${clickedHotspot.id}`);
-                    foundHotspots.push(clickedHotspot.id);
-                    hotspotEl.classList.add('found');
                     
-                    // Show tooltip with correct message
+                    if (!foundHotspots.includes(clickedHotspot.id)) {
+                        foundHotspots.push(clickedHotspot.id);
+                        hotspotEl.classList.add('found');
+                        
+                        updateProgress();
+                    }
+                    
+                    // Show tooltip with correct message (even for already found hotspots)
                     showTooltip(clickedHotspot.message, true);
-                    
-                    updateProgress();
-                    
-                    // if (foundHotspots.length === hotspots.length) {
-                    //     setTimeout(() => {
-                    //         // showTooltip("Congratulations! You've found all the mistakes!", true);
-                    //     }, 2000);
-                    // }
                 } else {
                     // Create temporary div for wrong click
                     const wrongSpot = document.createElement('div');
@@ -409,7 +432,7 @@
                     // Hide tooltip after animation
                     setTimeout(() => {
                         tooltip.className = 'tooltip';
-                        tooltip.textContent = 'Click on the diagram to identify mistakes in the Born-Haber cycle.';
+                        tooltip.textContent = 'Click on the diagram to identify mistakes in the Born-Haber cycle. Click again on found mistakes to review their explanations.';
                     }, 2000);
                 }
             });
