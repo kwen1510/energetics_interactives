@@ -78,12 +78,13 @@
             cursor: pointer;
             border: 2px solid #3498db;
             border-radius: 5px;
-            transition: transform 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
             background-color: white;
         }
         .image-item:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
         }
         .image-item img {
             width: 100%;
@@ -210,7 +211,8 @@
         /* Selected image styling */
         .image-item.selected {
             border: 2px solid #e74c3c;
-            box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
+            box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
+            transform: scale(1.05);
         }
         
         .sequence-heading {
@@ -797,107 +799,50 @@
             const resetButton = document.getElementById('reset-btn');
             const feedbackDiv = document.getElementById('feedback');
             let selectedItem = null;
-            let originalParent = null;
             
             // Set internal IDs for tracking purposes (not visible to users)
             let imageId = 1;
             imageItems.forEach(item => {
                 item.dataset.id = imageId++;
+                // Remove draggable attribute
+                item.removeAttribute('draggable');
             });
             
-            // Set up drag and drop for the images
+            // Set up click handlers for images
             imageItems.forEach(item => {
-                item.addEventListener('dragstart', handleDragStart);
                 item.addEventListener('click', handleImageClick);
             });
             
+            // Set up click handlers for drop zones
             dropZones.forEach(zone => {
-                zone.addEventListener('dragover', handleDragOver);
-                zone.addEventListener('dragleave', handleDragLeave);
-                zone.addEventListener('drop', handleDrop);
                 zone.addEventListener('click', handleZoneClick);
             });
             
-            // Add click handler to the image source container to return selected images
+            // Add click handler to the image source container
             imageSource.addEventListener('click', function(e) {
                 // Only act if clicking directly on the container (not on an image)
                 if (e.target === this && selectedItem) {
                     // Return the selected item to the image source
-                    imageSource.appendChild(selectedItem);
-                    selectedItem.classList.remove('selected');
+                    const currentParent = selectedItem.parentNode;
                     
-                    // Update the sequence array (find and remove the image from its position)
-                    const imageId = selectedItem.dataset.id;
-                    const position = currentSequence.indexOf(imageId);
-                    if (position !== -1) {
-                        // Find and update the drop zone
-                        dropZones.forEach(zone => {
-                            if (parseInt(zone.dataset.position) === position + 1) {
-                                zone.classList.remove('filled');
-                            }
-                        });
-                        
-                        // Remove from sequence
+                    // If coming from a drop zone, update the sequence
+                    if (currentParent.classList.contains('drop-zone')) {
+                        const position = parseInt(currentParent.dataset.position) - 1;
                         currentSequence[position] = null;
+                        currentParent.classList.remove('filled');
                     }
                     
+                    // Move the item back to source
+                    imageSource.appendChild(selectedItem);
+                    selectedItem.classList.remove('selected');
                     selectedItem = null;
                 }
             });
             
-            // Handle dragging start
-            function handleDragStart(e) {
-                originalParent = this.parentNode;
-                setTimeout(() => {
-                    this.style.display = 'none';
-                }, 0);
-                e.dataTransfer.setData('text/plain', this.dataset.id);
-            }
-            
-            // Handle drag over drop zone
-            function handleDragOver(e) {
-                e.preventDefault();
-                this.classList.add('active');
-            }
-            
-            // Handle drag leaving drop zone
-            function handleDragLeave() {
-                this.classList.remove('active');
-            }
-            
-            // Handle dropping the image
-            function handleDrop(e) {
-                e.preventDefault();
-                this.classList.remove('active');
-                const draggedItemId = e.dataTransfer.getData('text/plain');
-                const draggedItem = document.querySelector(`[data-id="${draggedItemId}"]`);
-                
-                // If the drop zone already has an image, swap them
-                const existingImage = this.querySelector('.image-item');
-                if (existingImage) {
-                    // Swap the items
-                    originalParent.appendChild(existingImage);
-                    existingImage.style.display = 'block';
-                    
-                    // If the original parent was a drop zone, update the sequence
-                    if (originalParent.classList.contains('drop-zone')) {
-                        const originalPosition = parseInt(originalParent.dataset.position) - 1;
-                        currentSequence[originalPosition] = existingImage.dataset.id;
-                    }
-                }
-                
-                // Add the dragged item to this drop zone
-                this.appendChild(draggedItem);
-                draggedItem.style.display = 'block';
-                this.classList.add('filled');
-                
-                // Update the sequence array
-                const position = parseInt(this.dataset.position) - 1;
-                currentSequence[position] = draggedItem.dataset.id;
-            }
-            
             // Click to select an image
             function handleImageClick(e) {
+                e.stopPropagation();
+                
                 // If this is a second click on the same item, deselect it
                 if (selectedItem === this) {
                     selectedItem.classList.remove('selected');
@@ -917,45 +862,8 @@
                     // Remove selection styling
                     firstItem.classList.remove('selected');
                     
-                    // If both parents are drop zones, swap the items and update sequence
-                    if (firstParent.classList.contains('drop-zone') && secondParent.classList.contains('drop-zone')) {
-                        // Swap the items
-                        secondParent.appendChild(firstItem);
-                        firstParent.appendChild(secondItem);
-                        
-                        // Update the sequence array
-                        const firstPosition = parseInt(firstParent.dataset.position) - 1;
-                        const secondPosition = parseInt(secondParent.dataset.position) - 1;
-                        
-                        currentSequence[firstPosition] = secondItem.dataset.id;
-                        currentSequence[secondPosition] = firstItem.dataset.id;
-                    } 
-                    // If only the first item is in a drop zone, move it to image source and second to drop zone
-                    else if (firstParent.classList.contains('drop-zone') && secondParent === imageSource) {
-                        // Move first item to image source
-                        imageSource.appendChild(firstItem);
-                        
-                        // Move second item to the drop zone
-                        firstParent.appendChild(secondItem);
-                        firstParent.classList.add('filled');
-                        
-                        // Update the sequence array
-                        const dropPosition = parseInt(firstParent.dataset.position) - 1;
-                        currentSequence[dropPosition] = secondItem.dataset.id;
-                    }
-                    // If only the second item is in a drop zone, move it to image source and first to drop zone
-                    else if (secondParent.classList.contains('drop-zone') && firstParent === imageSource) {
-                        // Move second item to image source
-                        imageSource.appendChild(secondItem);
-                        
-                        // Move first item to the drop zone
-                        secondParent.appendChild(firstItem);
-                        secondParent.classList.add('filled');
-                        
-                        // Update the sequence array
-                        const dropPosition = parseInt(secondParent.dataset.position) - 1;
-                        currentSequence[dropPosition] = firstItem.dataset.id;
-                    }
+                    // Handle the swap
+                    swapItems(firstItem, secondItem, firstParent, secondParent);
                     
                     selectedItem = null;
                     return;
@@ -968,42 +876,76 @@
             
             // Click on a drop zone to place the selected image
             function handleZoneClick(e) {
+                e.stopPropagation();
+                
                 // Only respond to clicks directly on the zone, not on contained images
-                if (e.target !== this) return;
+                if (e.target !== this || !selectedItem) return;
                 
-                if (!selectedItem) return;
-                
-                // If the zone already contains an image, swap them
                 const existingImage = this.querySelector('.image-item');
+                const selectedParent = selectedItem.parentNode;
+                
+                // Handle the placement/swap
                 if (existingImage) {
-                    // Get the parent of the selected item
-                    const selectedParent = selectedItem.parentNode;
+                    swapItems(selectedItem, existingImage, selectedParent, this);
+                } else {
+                    // Simple placement if zone is empty
+                    this.appendChild(selectedItem);
+                    this.classList.add('filled');
                     
-                    // If the selected item is from a drop zone, update that position in the sequence
+                    // Update sequence if coming from another drop zone
                     if (selectedParent.classList.contains('drop-zone')) {
-                        const selectedPosition = parseInt(selectedParent.dataset.position) - 1;
-                        
-                        // Move existing image to the selected item's former position
-                        selectedParent.appendChild(existingImage);
-                        
-                        // Update sequence for the original position
-                        currentSequence[selectedPosition] = existingImage.dataset.id;
-                    } else {
-                        // Just move the existing image to the source
-                        imageSource.appendChild(existingImage);
+                        const oldPosition = parseInt(selectedParent.dataset.position) - 1;
+                        currentSequence[oldPosition] = null;
+                        selectedParent.classList.remove('filled');
                     }
+                    
+                    // Update sequence for new position
+                    const newPosition = parseInt(this.dataset.position) - 1;
+                    currentSequence[newPosition] = selectedItem.dataset.id;
                 }
                 
-                // Place the selected image in this zone
-                this.appendChild(selectedItem);
-                this.classList.add('filled');
                 selectedItem.classList.remove('selected');
-                
-                // Update the sequence array for the new position
-                const position = parseInt(this.dataset.position) - 1;
-                currentSequence[position] = selectedItem.dataset.id;
-                
                 selectedItem = null;
+            }
+            
+            // Helper function to handle swapping items
+            function swapItems(firstItem, secondItem, firstParent, secondParent) {
+                // Store original positions
+                const firstPosition = firstParent.classList.contains('drop-zone') ? 
+                    parseInt(firstParent.dataset.position) - 1 : null;
+                const secondPosition = secondParent.classList.contains('drop-zone') ? 
+                    parseInt(secondParent.dataset.position) - 1 : null;
+                
+                // Perform the swap
+                if (firstParent.classList.contains('drop-zone')) {
+                    firstParent.classList.remove('filled');
+                }
+                if (secondParent.classList.contains('drop-zone')) {
+                    secondParent.classList.remove('filled');
+                }
+                
+                // Move items
+                if (firstPosition !== null) {
+                    secondParent.appendChild(firstItem);
+                    secondParent.classList.add('filled');
+                } else {
+                    imageSource.appendChild(firstItem);
+                }
+                
+                if (secondPosition !== null) {
+                    firstParent.appendChild(secondItem);
+                    firstParent.classList.add('filled');
+                } else {
+                    imageSource.appendChild(secondItem);
+                }
+                
+                // Update sequence array
+                if (firstPosition !== null) {
+                    currentSequence[firstPosition] = secondItem ? secondItem.dataset.id : null;
+                }
+                if (secondPosition !== null) {
+                    currentSequence[secondPosition] = firstItem ? firstItem.dataset.id : null;
+                }
             }
             
             // Check the answer when the button is clicked
