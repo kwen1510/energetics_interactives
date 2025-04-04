@@ -376,6 +376,10 @@
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
             position: relative;
+            /* Prevent iOS from converting arrows to emoji */
+            -webkit-font-feature-settings: "liga" 0;
+            font-feature-settings: "liga" 0;
+            font-variant: normal;
         }
         
         .diagonal-up {
@@ -846,10 +850,10 @@
                 </div>
                 
                 <!-- Diagonal arrow going up -->
-                <div class="arrow diagonal-up" style="grid-column: 2; grid-row: 1;">↗</div>
+                <div class="arrow diagonal-up" style="grid-column: 2; grid-row: 1;">&#8599;</div>
                 
                 <!-- Diagonal arrow going down -->
-                <div class="arrow diagonal-down" style="grid-column: 2; grid-row: 3;">↘</div>
+                <div class="arrow diagonal-down" style="grid-column: 2; grid-row: 3;">&#8600;</div>
                 
                 <!-- Top atoms box -->
                 <div class="drop-zone-container" style="grid-column: 3; grid-row: 1;">
@@ -865,7 +869,7 @@
                 </div>
                 
                 <!-- Bottom horizontal arrow -->
-                <div class="arrow" style="grid-column: 4; grid-row: 3;">→</div>
+                <div class="arrow" style="grid-column: 4; grid-row: 3;">&#8594;</div>
                 
                 <!-- Bottom ions box -->
                 <div class="drop-zone-container" style="grid-column: 5; grid-row: 3;">
@@ -873,7 +877,7 @@
                 </div>
                 
                 <!-- Top horizontal arrow - only one arrow -->
-                <div class="arrow" style="grid-column: 4; grid-row: 1; grid-column-end: 6;">→</div>
+                <div class="arrow" style="grid-column: 4; grid-row: 1; grid-column-end: 6;">&#8594;</div>
                 
                 <!-- Top ions box (shifted left) -->
                 <div class="drop-zone-container" style="grid-column: 6; grid-row: 1;">
@@ -881,10 +885,10 @@
                 </div>
                 
                 <!-- Diagonal converging arrow from top (adjusted) -->
-                <div class="arrow diagonal-down" style="grid-column: 7; grid-row: 1;">↘</div>
+                <div class="arrow diagonal-down" style="grid-column: 7; grid-row: 1;">&#8600;</div>
                 
                 <!-- Diagonal converging arrow from bottom (adjusted) -->
-                <div class="arrow diagonal-up" style="grid-column: 7; grid-row: 3;">↗</div>
+                <div class="arrow diagonal-up" style="grid-column: 7; grid-row: 3;">&#8599;</div>
                 
                 <!-- Ionic compound (right column, spans both rows, adjusted) -->
                 <div class="drop-zone-container" style="grid-column: 8; grid-row: 1 / span 3; align-self: center;">
@@ -1080,6 +1084,7 @@
                 // Check if all positions are filled
                 if (currentSequence.includes(null)) {
                     showFeedback("Please fill all positions in the sequence.", false);
+                    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
                 
@@ -1145,6 +1150,9 @@
                 } else {
                     showFeedback(feedback, false);
                 }
+                
+                // Scroll to the feedback
+                feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
             
             // Reset the sequence
